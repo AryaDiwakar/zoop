@@ -21,6 +21,7 @@ model User {
   leadsAssigned   Lead[]           @relation("LeadCounsellor")
   leadFollowUps   LeadFollowUp[]
   studentsTaught  Student[]        @relation("StudentTutor")
+  batchesTaught   Batch[]
   auditLogs       AuditLog[]
   issuedCertificates Certificate[] @relation("CertificateIssuedBy")
   attendanceLogs  Attendance[]
@@ -163,6 +164,7 @@ model Batch {
   courseId  String
   course    Course   @relation(fields: [courseId], references: [id], onDelete: Cascade)
   tutorId   String?
+  tutor     User?    @relation(fields: [tutorId], references: [id])
   startDate DateTime?
   timings   String?
   status    String   @default("ACTIVE")

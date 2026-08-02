@@ -33,7 +33,7 @@ interface NavItem {
 const NAV: { group: string; items: NavItem[] }[] = [
   {
     group: "Overview",
-    items: [{ label: "Dashboard", href: "/dashboard", icon: LayoutDashboard, roles: [ROLES.SUPER_ADMIN, ROLES.COUNSELLOR, ROLES.TUTOR, ROLES.FINANCE] }],
+    items: [{ label: "Dashboard", href: "/", icon: LayoutDashboard, roles: [ROLES.SUPER_ADMIN, ROLES.COUNSELLOR, ROLES.TUTOR, ROLES.FINANCE] }],
   },
   {
     group: "CRM",
