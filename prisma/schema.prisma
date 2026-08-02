@@ -1,0 +1,379 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model User {
+  id           String      @id @default(cuid())
+  name         String
+  email        String      @unique
+  passwordHash String
+  role         String // SUPER_ADMIN | COUNSELLOR | TUTOR | FINANCE
+  phone        String?
+  active       Boolean     @default(true)
+  createdAt    DateTime    @default(now())
+  updatedAt    DateTime    @updatedAt
+
+  leadsAssigned   Lead[]           @relation("LeadCounsellor")
+  leadFollowUps   LeadFollowUp[]
+  studentsTaught  Student[]        @relation("StudentTutor")
+  auditLogs       AuditLog[]
+  issuedCertificates Certificate[] @relation("CertificateIssuedBy")
+  attendanceLogs  Attendance[]
+
+  @@map("users")
+}
+
+model Lead {
+  id               String        @id @default(cuid())
+  leadDate         DateTime      @default(now())
+  studentName      String
+  parentName       String?
+  mobile           String
+  altMobile        String?
+  email            String?
+  address          String?
+  qualification    String?
+  college          String?
+  interestedCourse String?
+  leadSource       String        @default("OTHER")
+  counsellorId     String?
+  counsellor       User?         @relation("LeadCounsellor", fields: [counsellorId], references: [id])
+  remarks          String?
+  status           String        @default("NEW")
+  convertedStudent Student?
+  followUps        LeadFollowUp[]
+  createdAt        DateTime      @default(now())
+  updatedAt        DateTime      @updatedAt
+
+  @@map("leads")
+}
+
+model LeadFollowUp {
+  id                String   @id @default(cuid())
+  leadId            String
+  lead              Lead     @relation(fields: [leadId], references: [id], onDelete: Cascade)
+  followUpDate      DateTime
+  discussionNotes   String?
+  contactMethod     String?
+  nextFollowUpDate  DateTime?
+  counsellorRemarks String?
+  userId            String?
+  user              User?    @relation(fields: [userId], references: [id])
+  createdAt         DateTime @default(now())
+
+  @@map("lead_followups")
+}
+
+model Course {
+  id                  String   @id @default(cuid())
+  name                String
+  code                String   @unique
+  description         String?
+  durationMonths      Int      @default(6)
+  totalClasses        Int      @default(0)
+  totalModules        Int      @default(0)
+  totalProjects       Int      @default(0)
+  level               String?
+  learningPattern     String?
+  softwareUsed        String[]
+  aiTools             String[]
+  expectedOutcomes    String?
+  careerOpportunities String?
+  status              String   @default("ACTIVE")
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @updatedAt
+
+  modules  Module[]
+  projects Project[]
+  batches  Batch[]
+  students Student[]
+
+  @@map("courses")
+}
+
+model Module {
+  id                 String   @id @default(cuid())
+  courseId           String
+  course             Course   @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  number             Int
+  name               String
+  description        String?
+  learningObjectives String?
+  totalClasses       Int      @default(0)
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
+
+  classes       Class[]
+  projects      Project[]
+  studentModules StudentModule[]
+  attendanceLogs Attendance[]
+
+  @@unique([courseId, number])
+  @@map("modules")
+}
+
+model Class {
+  id               String   @id @default(cuid())
+  moduleId         String
+  module           Module   @relation(fields: [moduleId], references: [id], onDelete: Cascade)
+  number           Int
+  name             String
+  learningTopic    String?
+  practicalExercise String?
+  durationMinutes  Int      @default(120)
+  tutorNotes       String?
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  studentClasses StudentClass[]
+  attendanceLogs Attendance[]
+
+  @@unique([moduleId, number])
+  @@map("classes")
+}
+
+model Project {
+  id                 String   @id @default(cuid())
+  courseId           String
+  course             Course   @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  moduleId           String?
+  module             Module?  @relation(fields: [moduleId], references: [id], onDelete: Cascade)
+  name               String
+  description        String?
+  deliverables       String?
+  difficulty         String?
+  estimatedHours     Int      @default(0)
+  evaluationCriteria String?
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
+
+  studentProjects StudentProject[]
+
+  @@map("projects")
+}
+
+model Batch {
+  id        String   @id @default(cuid())
+  name      String
+  courseId  String
+  course    Course   @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  tutorId   String?
+  startDate DateTime?
+  timings   String?
+  status    String   @default("ACTIVE")
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  students Student[]
+
+  @@map("batches")
+}
+
+model Student {
+  id                     String   @id @default(cuid())
+  rollNumber             String   @unique
+  name                   String
+  parentName             String?
+  photo                  String?
+  mobile                 String
+  altMobile              String?
+  email                  String?
+  address                String?
+  qualification          String?
+  occupation             String?
+  joiningDate            DateTime
+  dob                    DateTime?
+  emergencyContact       String?
+  notes                  String?
+  status                 String   @default("IN_PROGRESS")
+  courseId               String
+  course                 Course   @relation(fields: [courseId], references: [id])
+  batchId                String?
+  batch                  Batch?   @relation(fields: [batchId], references: [id])
+  tutorId                String?
+  tutor                  User?    @relation("StudentTutor", fields: [tutorId], references: [id])
+  courseStartDate        DateTime
+  expectedCompletionDate DateTime?
+  courseDurationMonths   Int      @default(6)
+  leadId                 String?  @unique
+  lead                   Lead?    @relation(fields: [leadId], references: [id])
+
+  // Finance
+  courseFee        Float    @default(0)
+  registrationFee  Float    @default(0)
+  discount         Float    @default(0)
+  netFee           Float    @default(0)
+  paymentType      String?  @default("LUMPSUM")
+  paymentTerms     String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  studentModules  StudentModule[]
+  studentClasses  StudentClass[]
+  studentProjects StudentProject[]
+  portfolios      Portfolio[]
+  availabilities  Availability[]
+  emis            EMI[]
+  certificates    Certificate[]
+  attendanceLogs  Attendance[]
+
+  @@map("students")
+}
+
+model StudentModule {
+  id            String   @id @default(cuid())
+  studentId     String
+  student       Student  @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  moduleId      String
+  module        Module   @relation(fields: [moduleId], references: [id], onDelete: Cascade)
+  status        String   @default("YET_TO_START")
+  completedDate DateTime?
+  createdAt     DateTime @default(now())
+
+  @@unique([studentId, moduleId])
+  @@map("student_modules")
+}
+
+model StudentClass {
+  id          String    @id @default(cuid())
+  studentId   String
+  student     Student   @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  classId     String
+  class       Class     @relation(fields: [classId], references: [id], onDelete: Cascade)
+  plannedDate DateTime?
+  actualDate  DateTime?
+  attendance  String    @default("PENDING") // PENDING | PRESENT | ABSENT | RESCHEDULED | CANCELLED
+  tutorId     String?
+  remarks     String?
+  createdAt   DateTime  @default(now())
+
+  @@unique([studentId, classId])
+  @@map("student_classes")
+}
+
+model StudentProject {
+  id            String    @id @default(cuid())
+  studentId     String
+  student       Student   @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  projectId     String
+  project       Project   @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  status        String    @default("YET_TO_START") // YET_TO_START | IN_PROGRESS | SUBMITTED | INTERNAL_FEEDBACK | REWORK_REQUIRED | APPROVED
+  submissionDate DateTime?
+  approvalDate  DateTime?
+  facultyFeedback String?
+  projectLink   String?
+  createdAt     DateTime  @default(now())
+
+  @@unique([studentId, projectId])
+  @@map("student_projects")
+}
+
+model Portfolio {
+  id           String   @id @default(cuid())
+  studentId    String
+  student      Student  @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  status       String   @default("YET_TO_START") // YET_TO_START | IN_PROGRESS | SUBMITTED | UNDER_REVIEW | APPROVED
+  behanceLink  String?
+  dribbbleLink String?
+  websiteLink  String?
+  pdfUrl       String?
+  facultyReview String?
+  submittedAt  DateTime?
+  reviewedAt   DateTime?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  @@unique([studentId])
+  @@map("portfolios")
+}
+
+model Availability {
+  id        String   @id @default(cuid())
+  studentId String
+  student   Student  @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  dayOfWeek Int      // 0 = Sunday .. 6 = Saturday
+  startTime String   // "18:00"
+  endTime   String   // "20:00"
+  createdAt DateTime @default(now())
+
+  @@map("availabilities")
+}
+
+model EMI {
+  id               String    @id @default(cuid())
+  studentId        String
+  student          Student   @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  number           Int
+  dueDate          DateTime
+  amount           Float
+  paymentDate      DateTime?
+  amountPaid       Float     @default(0)
+  balance          Float     @default(0)
+  receiptNumber    String?
+  transactionRef   String?
+  paymentMode      String?
+  remarks          String?
+  status           String    @default("PENDING") // PENDING | PAID | PARTIAL | OVERDUE
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
+
+  @@unique([studentId, number])
+  @@map("emis")
+}
+
+model Certificate {
+  id                String    @id @default(cuid())
+  studentId         String
+  student           Student   @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  status            String    @default("NOT_ELIGIBLE") // NOT_ELIGIBLE | ELIGIBLE | GENERATED | ISSUED
+  certificateNumber String?   @unique
+  issueDate         DateTime?
+  issuedById        String?
+  issuedBy          User?     @relation("CertificateIssuedBy", fields: [issuedById], references: [id])
+  remarks           String?
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+
+  @@unique([studentId])
+  @@map("certificates")
+}
+
+model Attendance {
+  id        String   @id @default(cuid())
+  date      DateTime
+  time      String?
+  studentId String
+  student   Student  @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  tutorId   String?
+  tutor     User?    @relation(fields: [tutorId], references: [id])
+  moduleId  String?
+  module    Module?  @relation(fields: [moduleId], references: [id], onDelete: SetNull)
+  classId   String?
+  class     Class?   @relation(fields: [classId], references: [id], onDelete: SetNull)
+  status    String   // PRESENT | ABSENT | RESCHEDULED | CANCELLED
+  remarks   String?
+  createdAt DateTime @default(now())
+
+  @@map("attendance")
+}
+
+model AuditLog {
+  id        String   @id @default(cuid())
+  userId    String?
+  user      User?    @relation(fields: [userId], references: [id])
+  action    String
+  entity    String
+  entityId  String?
+  details   String?
+  createdAt DateTime @default(now())
+
+  @@index([createdAt])
+  @@index([entity])
+  @@map("audit_logs")
+}
