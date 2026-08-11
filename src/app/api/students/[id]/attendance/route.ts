@@ -16,15 +16,18 @@ export async function POST(
 
   const body = await request.json();
   const status = body.status as string;
+  const studentClassId = body.id as string;
   if (!["PRESENT", "ABSENT", "RESCHEDULED", "CANCELLED"].includes(status)) {
     return NextResponse.json({ error: "Invalid status" }, { status: 400 });
   }
+  if (!studentClassId) return NextResponse.json({ error: "Class id is required" }, { status: 400 });
 
   const studentClass = await prisma.studentClass.findUnique({
-    where: { id },
+    where: { id: studentClassId },
     include: { student: true, class: { include: { module: true } } },
   });
   if (!studentClass) return NextResponse.json({ error: "Class not found" }, { status: 404 });
+  if (studentClass.studentId !== id) return NextResponse.json({ error: "Class does not belong to this student" }, { status: 400 });
 
   const now = new Date();
   let plannedDate = studentClass.plannedDate;
@@ -38,7 +41,7 @@ export async function POST(
   }
 
   await prisma.studentClass.update({
-    where: { id },
+    where: { id: studentClassId },
     data: {
       attendance: status,
       actualDate: status === "PRESENT" ? now : status === "ABSENT" ? now : body.actualDate ? new Date(body.actualDate) : null,

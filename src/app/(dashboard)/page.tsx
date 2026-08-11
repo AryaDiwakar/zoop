@@ -1,6 +1,8 @@
 import { getDashboardStats } from "@/lib/stats";
 import { getNotifications } from "@/lib/notifications";
 import { requireAuth } from "@/lib/auth";
+import { ROLES } from "@/lib/constants";
+import { redirect } from "next/navigation";
 import { StatCard, Card } from "@/components/ui";
 import { StatusBadge } from "@/components/StatusBadge";
 import { formatINR, monthLabel } from "@/lib/utils";
@@ -34,8 +36,16 @@ const TODAY = new Date().toLocaleDateString("en-IN", {
 
 export default async function DashboardPage() {
   const user = await requireAuth();
+  if (user.role === ROLES.STUDENT) {
+    if (user.studentId) redirect(`/students/${user.studentId}`);
+    return (
+      <div className="p-8 text-center text-sm text-slate-500">
+        No student profile is linked to this account yet.
+      </div>
+    );
+  }
   const stats = await getDashboardStats();
-  const notifications = (await getNotifications()).slice(0, 8);
+  const notifications = (await getNotifications(user)).slice(0, 8);
 
   const leadBadge = (label: string, value: string | number) => (
     <div className="flex items-center justify-between rounded-lg bg-slate-50 px-3 py-2">
@@ -53,7 +63,7 @@ export default async function DashboardPage() {
         </div>
         <Link
           href="/leads/new"
-          className="inline-flex items-center gap-1.5 rounded-lg bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700"
+          className="inline-flex items-center gap-1.5 rounded-lg bg-brand-600 px-4 py-2 text-sm font-medium text-white hover:bg-brand-700"
         >
           <UserPlus className="h-4 w-4" /> New Lead
         </Link>
@@ -63,7 +73,7 @@ export default async function DashboardPage() {
       <section>
         <h2 className="mb-3 text-xs font-semibold uppercase tracking-widest text-slate-400">Lead Statistics</h2>
         <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5">
-          <StatCard label="Total Leads" value={stats.leads.total} icon={<Users className="h-5 w-5" />} tone="indigo" link="/leads" />
+          <StatCard label="Total Leads" value={stats.leads.total} icon={<Users className="h-5 w-5" />} tone="brand" link="/leads" />
           <StatCard label="New Leads Today" value={stats.leads.newToday} icon={<UserPlus className="h-5 w-5" />} tone="blue" link="/leads" />
           <StatCard label="Follow-up Today" value={stats.leads.followUpToday} icon={<CalendarClock className="h-5 w-5" />} tone="amber" link="/leads" />
           <StatCard label="Leads Converted" value={stats.leads.converted} icon={<BadgeCheck className="h-5 w-5" />} tone="green" link="/leads" />
@@ -75,7 +85,7 @@ export default async function DashboardPage() {
       <section>
         <h2 className="mb-3 text-xs font-semibold uppercase tracking-widest text-slate-400">Student Statistics</h2>
         <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-6">
-          <StatCard label="Active Students" value={stats.students.active} icon={<GraduationCap className="h-5 w-5" />} tone="indigo" link="/students" />
+          <StatCard label="Active Students" value={stats.students.active} icon={<GraduationCap className="h-5 w-5" />} tone="brand" link="/students" />
           <StatCard label="New Admissions" value={stats.students.newAdmissions} icon={<UserPlus className="h-5 w-5" />} tone="blue" link="/students" />
           <StatCard label="In Progress" value={stats.students.inProgress} icon={<UserCheck className="h-5 w-5" />} tone="violet" link="/students" />
           <StatCard label="Completed" value={stats.students.completed} icon={<FileCheck2 className="h-5 w-5" />} tone="green" link="/students" />
@@ -91,7 +101,7 @@ export default async function DashboardPage() {
           <StatCard label="Today's Classes" value={stats.academic.todaysClasses} icon={<CalendarDays className="h-5 w-5" />} tone="blue" link="/attendance" />
           <StatCard label="Classes Pending" value={stats.academic.classesPending} icon={<Clock className="h-5 w-5" />} tone="amber" link="/students" />
           <StatCard label="Projects Pending" value={stats.academic.projectsPending} icon={<FolderKanban className="h-5 w-5" />} tone="violet" link="/portfolio" />
-          <StatCard label="Portfolio Pending" value={stats.academic.portfolioPending} icon={<ClipboardCheck className="h-5 w-5" />} tone="indigo" link="/portfolio" />
+          <StatCard label="Portfolio Pending" value={stats.academic.portfolioPending} icon={<ClipboardCheck className="h-5 w-5" />} tone="brand" link="/portfolio" />
           <StatCard label="Ready for Final Review" value={stats.academic.readyForFinalReview} icon={<BadgeCheck className="h-5 w-5" />} tone="green" link="/portfolio" />
         </div>
       </section>
@@ -124,7 +134,7 @@ export default async function DashboardPage() {
                   </div>
                   <div className="h-2 w-full overflow-hidden rounded-full bg-slate-100">
                     <div
-                      className="h-2 rounded-full bg-indigo-500"
+                      className="h-2 rounded-full bg-brand-500"
                       style={{
                         width: `${(c.count / Math.max(1, stats.courseStats.byCourse[0].count)) * 100}%`,
                       }}
@@ -177,7 +187,7 @@ export default async function DashboardPage() {
           title="Reminders & Alerts"
           subtitle="Follow-ups, dues and pending tasks"
           action={
-            <Link href="/notifications" className="text-xs font-medium text-indigo-600 hover:underline">
+            <Link href="/notifications" className="text-xs font-medium text-brand-600 hover:underline">
               View all
             </Link>
           }
@@ -190,10 +200,10 @@ export default async function DashboardPage() {
               <Link
                 key={n.id}
                 href={n.href}
-                className="block rounded-lg border border-slate-100 p-3 transition-colors hover:border-indigo-200 hover:bg-indigo-50/40"
+                className="block rounded-lg border border-slate-100 p-3 transition-colors hover:border-brand-200 hover:bg-brand-50/40"
               >
                 <div className="flex items-start gap-2">
-                  <BellRing className="mt-0.5 h-3.5 w-3.5 shrink-0 text-indigo-400" />
+                  <BellRing className="mt-0.5 h-3.5 w-3.5 shrink-0 text-brand-400" />
                   <div className="min-w-0">
                     <p className="truncate text-sm font-medium text-slate-800">{n.title}</p>
                     <p className="mt-0.5 line-clamp-2 text-xs text-slate-500">{n.detail}</p>

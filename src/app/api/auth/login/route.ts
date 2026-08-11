@@ -31,6 +31,7 @@ export async function POST(request: Request) {
       name: user.name,
       email: user.email,
       role: user.role as never,
+      studentId: user.studentId,
     });
     await logAudit({ userId: user.id, action: "LOGIN", entity: "User", entityId: user.id });
 

@@ -5,7 +5,6 @@ import { usePathname } from "next/navigation";
 import { cn } from "@/components/ui";
 import {
   LayoutDashboard,
-  Users,
   UserPlus,
   GraduationCap,
   BookOpen,
@@ -16,10 +15,9 @@ import {
   BellRing,
   FileBarChart,
   Settings2,
-  Search,
   ShieldCheck,
-  ClipboardList,
   UserCog,
+  IdCard,
 } from "lucide-react";
 import { Role, ROLES } from "@/lib/constants";
 
@@ -61,32 +59,53 @@ const NAV: { group: string; items: NavItem[] }[] = [
     items: [
       { label: "Masters", href: "/masters", icon: Settings2, roles: [ROLES.SUPER_ADMIN] },
       { label: "Users & Roles", href: "/users", icon: UserCog, roles: [ROLES.SUPER_ADMIN] },
-      { label: "Notifications", href: "/notifications", icon: BellRing, roles: [ROLES.SUPER_ADMIN, ROLES.COUNSELLOR, ROLES.TUTOR, ROLES.FINANCE] },
+      { label: "Notifications", href: "/notifications", icon: BellRing, roles: [ROLES.SUPER_ADMIN, ROLES.COUNSELLOR, ROLES.TUTOR, ROLES.FINANCE, ROLES.STUDENT] },
       { label: "Audit Trail", href: "/audit", icon: ShieldCheck, roles: [ROLES.SUPER_ADMIN] },
     ],
   },
 ];
 
-export function Sidebar({ role, name }: { role: string; name: string }) {
+export function Sidebar({ role, name, studentId }: { role: string; name: string; studentId?: string }) {
   const pathname = usePathname();
-  const filtered = NAV.map((g) => ({
-    ...g,
-    items: g.items.filter((i) => i.roles.includes(role as Role)),
-  })).filter((g) => g.items.length > 0);
+
+  const isStudent = role === ROLES.STUDENT;
+
+  const nav = isStudent
+    ? [
+        {
+          group: "My Account",
+          items: [
+            {
+              label: "My Profile",
+              href: `/students/${studentId}`,
+              icon: IdCard,
+              roles: [ROLES.STUDENT],
+            },
+          ],
+        },
+        {
+          group: "General",
+          items: [
+            { label: "Notifications", href: "/notifications", icon: BellRing, roles: [ROLES.STUDENT] },
+          ],
+        },
+      ]
+    : NAV.map((g) => ({
+        ...g,
+        items: g.items.filter((i) => i.roles.includes(role as Role)),
+      })).filter((g) => g.items.length > 0);
 
   return (
     <aside className="hidden lg:flex w-60 shrink-0 flex-col border-r border-slate-200 bg-white">
       <div className="flex items-center gap-2.5 px-5 h-16 border-b border-slate-100">
-        <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-indigo-600 text-white font-black text-sm">
-          Z
-        </div>
+        <img src="/zoop-logo.png" alt="Zoop" className="h-9 w-auto object-contain" />
         <div>
           <p className="text-sm font-bold text-slate-900 leading-tight">Zoop ERP</p>
           <p className="text-[10px] text-slate-400 leading-tight">Academy Management</p>
         </div>
       </div>
       <nav className="flex-1 overflow-y-auto px-3 py-4 space-y-5">
-        {filtered.map((group) => (
+        {nav.map((group) => (
           <div key={group.group}>
             <p className="px-2 mb-1.5 text-[10px] font-semibold uppercase tracking-widest text-slate-400">
               {group.group}
@@ -101,7 +120,7 @@ export function Sidebar({ role, name }: { role: string; name: string }) {
                     className={cn(
                       "flex items-center gap-2.5 rounded-lg px-2.5 py-2 text-sm font-medium transition-colors",
                       active
-                        ? "bg-indigo-50 text-indigo-700"
+                        ? "bg-brand-50 text-brand-700"
                         : "text-slate-600 hover:bg-slate-50 hover:text-slate-900"
                     )}
                   >
@@ -114,22 +133,9 @@ export function Sidebar({ role, name }: { role: string; name: string }) {
           </div>
         ))}
       </nav>
-      <div className="border-t border-slate-100 p-3">
-        <Link
-          href="/search"
-          className={cn(
-            "flex items-center gap-2.5 rounded-lg px-2.5 py-2 text-sm font-medium transition-colors",
-            pathname.startsWith("/search")
-              ? "bg-indigo-50 text-indigo-700"
-              : "text-slate-600 hover:bg-slate-50 hover:text-slate-900"
-          )}
-        >
-          <Search className="h-4 w-4 shrink-0" />
-          Global Search
-        </Link>
+      <div className="border-t border-slate-100 px-5 py-3">
+        <p className="truncate text-[11px] text-slate-400">Signed in as {name}</p>
       </div>
     </aside>
   );
 }
-
-export { Users, ClipboardList };

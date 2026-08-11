@@ -92,7 +92,7 @@ export default async function LeadsPage({
                 <div className="flex items-center gap-2">
                   <Avatar name={lead.studentName} size="sm" />
                   <div>
-                    <Link href={`/leads/${lead.id}`} className="font-medium text-slate-800 hover:text-indigo-600">
+                    <Link href={`/leads/${lead.id}`} className="font-medium text-slate-800 hover:text-brand-600">
                       {lead.studentName}
                     </Link>
                     <p className="text-[11px] text-slate-400">{lead.parentName || "—"}</p>
@@ -113,7 +113,7 @@ export default async function LeadsPage({
                 {lead.followUps[0]?.nextFollowUpDate ? formatDate(lead.followUps[0].nextFollowUpDate) : "—"}
               </td>
               <td className="px-4 py-3">
-                <Link href={`/leads/${lead.id}`} className="text-xs font-medium text-indigo-600 hover:underline">
+                <Link href={`/leads/${lead.id}`} className="text-xs font-medium text-brand-600 hover:underline">
                   View
                 </Link>
               </td>

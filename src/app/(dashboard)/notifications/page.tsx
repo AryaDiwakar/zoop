@@ -6,12 +6,16 @@ import { ROLES } from "@/lib/constants";
 export const metadata = { title: "Notifications" };
 
 export default async function NotificationsPage() {
-  await requireRole(ROLES.SUPER_ADMIN, ROLES.COUNSELLOR, ROLES.TUTOR, ROLES.FINANCE);
+  const user = await requireRole(ROLES.SUPER_ADMIN, ROLES.COUNSELLOR, ROLES.TUTOR, ROLES.FINANCE, ROLES.STUDENT);
 
-  const items = await getNotifications();
+  const items = await getNotifications(user);
 
   const typeTone: Record<string, string> = {
-    LEAD_FOLLOWUP: "bg-indigo-100 text-indigo-700",
+    PAYMENT_RECEIVED: "bg-emerald-100 text-emerald-700",
+    PORTFOLIO_ACTIVITY: "bg-violet-100 text-violet-700",
+    NEW_ADMISSION: "bg-brand-100 text-brand-700",
+    CERTIFICATE_ISSUED: "bg-sky-100 text-sky-700",
+    LEAD_FOLLOWUP: "bg-brand-100 text-brand-700",
     TODAY_CLASS: "bg-sky-100 text-sky-700",
     EMI_DUE: "bg-amber-100 text-amber-700",
     EMI_OVERDUE: "bg-rose-100 text-rose-700",
@@ -20,6 +24,10 @@ export default async function NotificationsPage() {
   };
 
   const typeLabel: Record<string, string> = {
+    PAYMENT_RECEIVED: "Payment",
+    PORTFOLIO_ACTIVITY: "Portfolio",
+    NEW_ADMISSION: "Admission",
+    CERTIFICATE_ISSUED: "Certificate",
     LEAD_FOLLOWUP: "Lead follow-up",
     TODAY_CLASS: "Class today",
     EMI_DUE: "EMI due",
@@ -32,7 +40,7 @@ export default async function NotificationsPage() {
     <div className="animate-fade-in space-y-6">
       <PageHeader title="Notifications" subtitle="Actionable alerts generated from live data" />
 
-      <Card title="Alerts" subtitle={`${items.length} items`} className="p-0">
+      <Card title="Activity" subtitle={`${items.length} items`} className="p-0">
         {items.length === 0 && (
           <EmptyState title="All clear" subtitle="No pending follow-ups, classes, EMIs or portfolio items." />
         )}

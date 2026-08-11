@@ -9,12 +9,14 @@ export function DashboardShell({
   name,
   email,
   role,
+  studentId,
   notificationCount,
   children,
 }: {
   name: string;
   email: string;
   role: string;
+  studentId?: string;
   notificationCount: number;
   children: React.ReactNode;
 }) {
@@ -35,7 +37,7 @@ export function DashboardShell({
           menuOpen ? "translate-x-0" : "-translate-x-full"
         )}
       >
-        <Sidebar role={role} name={name} />
+        <Sidebar role={role} name={name} studentId={studentId} />
       </div>
       <div className="flex min-w-0 flex-1 flex-col">
         <Topbar

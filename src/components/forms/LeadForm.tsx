@@ -134,7 +134,7 @@ export function LeadForm({
           <button
             type="button"
             onClick={() => setFollowUpVisible((v) => !v)}
-            className="text-sm font-medium text-indigo-600 hover:underline"
+            className="text-sm font-medium text-brand-600 hover:underline"
           >
             {followUpVisible ? "− Remove initial follow-up" : "+ Add initial follow-up"}
           </button>

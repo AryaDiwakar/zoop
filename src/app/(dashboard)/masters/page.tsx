@@ -23,7 +23,7 @@ export default async function MastersPage() {
     <div className="animate-fade-in space-y-6">
       <PageHeader title="Masters" subtitle="Batches and reference data" />
 
-      <Card title="Batches" subtitle={`${batches.length} batches`} action={<details className="w-full max-w-sm"><summary className="cursor-pointer text-xs font-medium text-indigo-600">+ New Batch</summary><div className="mt-3"><BatchForm courses={courses} tutors={tutors} /></div></details>}>
+      <Card title="Batches" subtitle={`${batches.length} batches`} action={<details className="w-full max-w-sm"><summary className="cursor-pointer text-xs font-medium text-brand-600">+ New Batch</summary><div className="mt-3"><BatchForm courses={courses} tutors={tutors} /></div></details>}>
         <Table
           headers={["Batch", "Course", "Tutor", "Start", "Timings", "Students", "Status"]}
           empty={<EmptyState title="No batches yet" subtitle="Create a batch to group students." />}

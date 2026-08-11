@@ -42,7 +42,7 @@ export default async function CoursesPage() {
             <tr key={c.id} className="hover:bg-slate-50">
               <td className="px-4 py-3 font-mono text-xs text-slate-500">{c.code}</td>
               <td className="px-4 py-3">
-                <Link href={`/courses/${c.id}`} className="font-medium text-slate-800 hover:text-indigo-600">
+                <Link href={`/courses/${c.id}`} className="font-medium text-slate-800 hover:text-brand-600">
                   {c.name}
                 </Link>
                 <p className="text-[11px] text-slate-400 max-w-[240px] truncate">{c.description || "—"}</p>
@@ -59,7 +59,7 @@ export default async function CoursesPage() {
                 </Badge>
               </td>
               <td className="px-4 py-3">
-                <Link href={`/courses/${c.id}`} className="text-xs font-medium text-indigo-600 hover:underline">
+                <Link href={`/courses/${c.id}`} className="text-xs font-medium text-brand-600 hover:underline">
                   View
                 </Link>
               </td>

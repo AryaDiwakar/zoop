@@ -12,14 +12,20 @@ export default async function UsersPage() {
 
   const users = await prisma.user.findMany({
     orderBy: [{ role: "asc" }, { name: "asc" }],
+    include: { student: { select: { name: true, rollNumber: true } } },
+  });
+
+  const students = await prisma.student.findMany({
+    orderBy: { name: "asc" },
+    select: { id: true, name: true, rollNumber: true },
   });
 
   return (
     <div className="animate-fade-in space-y-6">
-      <PageHeader title="Users & Roles" subtitle={`${users.length} staff accounts`} />
+      <PageHeader title="Users & Roles" subtitle={`${users.length} accounts`} />
 
       <Card>
-        <UserForm />
+        <UserForm students={students} />
       </Card>
 
       <Card title="Accounts" className="p-0">
@@ -34,13 +40,19 @@ export default async function UsersPage() {
                   <Avatar name={u.name} size="sm" />
                   <div>
                     <p className="text-sm font-medium text-slate-800">{u.name}</p>
-                    <p className="text-[11px] font-mono text-slate-400">{u.id.slice(-6).toUpperCase()}</p>
+                    {u.role === "STUDENT" ? (
+                      <p className="text-[11px] text-slate-400">
+                        {u.student ? `→ ${u.student.name} (${u.student.rollNumber})` : "Not mapped"}
+                      </p>
+                    ) : (
+                      <p className="text-[11px] font-mono text-slate-400">{u.id.slice(-6).toUpperCase()}</p>
+                    )}
                   </div>
                 </div>
               </td>
               <td className="px-4 py-3 text-xs text-slate-600">{u.email}</td>
               <td className="px-4 py-3">
-                <Badge tone={u.role === "SUPER_ADMIN" ? "violet" : u.role === "TUTOR" ? "blue" : u.role === "FINANCE" ? "teal" : "indigo"}>
+                <Badge tone={u.role === "SUPER_ADMIN" ? "violet" : u.role === "TUTOR" ? "blue" : u.role === "FINANCE" ? "teal" : u.role === "STUDENT" ? "brand" : "brand"}>
                   {ROLE_LABELS[u.role as keyof typeof ROLE_LABELS]}
                 </Badge>
               </td>

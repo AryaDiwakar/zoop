@@ -12,9 +12,11 @@ model User {
   name         String
   email        String      @unique
   passwordHash String
-  role         String // SUPER_ADMIN | COUNSELLOR | TUTOR | FINANCE
+  role         String // SUPER_ADMIN | COUNSELLOR | TUTOR | FINANCE | STUDENT
   phone        String?
   active       Boolean     @default(true)
+  studentId    String?     @unique
+  student      Student?    @relation(fields: [studentId], references: [id])
   createdAt    DateTime    @default(now())
   updatedAt    DateTime    @updatedAt
 
@@ -224,6 +226,7 @@ model Student {
   emis            EMI[]
   certificates    Certificate[]
   attendanceLogs  Attendance[]
+  userAccount     User?
 
   @@map("students")
 }

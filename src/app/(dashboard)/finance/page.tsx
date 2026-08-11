@@ -53,7 +53,7 @@ export default async function FinancePage() {
 
   const stats = [
     { label: "Today's Collection", value: formatINR(todaysCollection._sum.amountPaid), tone: "green" as const },
-    { label: "This Month", value: formatINR(monthlyCollection._sum.amountPaid), tone: "indigo" as const },
+    { label: "This Month", value: formatINR(monthlyCollection._sum.amountPaid), tone: "brand" as const },
     { label: "Outstanding", value: formatINR(outstanding._sum.balance), tone: "red" as const },
     { label: "Due Today", value: emisDue.length, tone: "amber" as const },
     { label: "Overdue", value: overdue.length, tone: "rose" as const },
@@ -83,7 +83,7 @@ export default async function FinancePage() {
             {[...emisDue, ...overdue].slice(0, 12).map((e) => (
               <tr key={e.id} className="hover:bg-slate-50">
                 <td className="px-4 py-3">
-                  <a href={`/students/${e.student.id}?tab=finance`} className="text-sm font-medium text-slate-800 hover:text-indigo-600">
+                  <a href={`/students/${e.student.id}?tab=finance`} className="text-sm font-medium text-slate-800 hover:text-brand-600">
                     {e.student.name}
                   </a>
                   <p className="text-[11px] font-mono text-slate-400">{e.student.rollNumber}</p>
@@ -116,7 +116,7 @@ export default async function FinancePage() {
             {recentPayments.map((e) => (
               <tr key={e.id} className="hover:bg-slate-50">
                 <td className="px-4 py-3">
-                  <a href={`/students/${e.student.id}?tab=finance`} className="text-sm font-medium text-slate-800 hover:text-indigo-600">
+                  <a href={`/students/${e.student.id}?tab=finance`} className="text-sm font-medium text-slate-800 hover:text-brand-600">
                     {e.student.name}
                   </a>
                 </td>
@@ -138,7 +138,7 @@ export default async function FinancePage() {
           {allEmis.map((e) => (
             <tr key={e.id} className="hover:bg-slate-50">
               <td className="px-4 py-3">
-                <a href={`/students/${e.student.id}?tab=finance`} className="text-sm font-medium text-slate-800 hover:text-indigo-600">
+                <a href={`/students/${e.student.id}?tab=finance`} className="text-sm font-medium text-slate-800 hover:text-brand-600">
                   {e.student.name}
                 </a>
               </td>

@@ -2,6 +2,18 @@
 
 @theme {
   --font-sans: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+
+  /* Zoop brand palette — derived from the #F1582D logo */
+  --color-brand-50: #fef5f0;
+  --color-brand-100: #fde7dc;
+  --color-brand-200: #facbb9;
+  --color-brand-300: #f6a583;
+  --color-brand-400: #f37c55;
+  --color-brand-500: #f15a2d;
+  --color-brand-600: #dd4113;
+  --color-brand-700: #b8330e;
+  --color-brand-800: #932a10;
+  --color-brand-900: #772510;
 }
 
 :root {

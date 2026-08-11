@@ -17,7 +17,7 @@ import {
 const toneMap: Record<string, string> = {
   // Lead
   NEW: "blue",
-  CONTACTED: "indigo",
+  CONTACTED: "brand",
   INTERESTED: "violet",
   DEMO_SCHEDULED: "amber",
   DEMO_ATTENDED: "teal",
@@ -30,7 +30,7 @@ const toneMap: Record<string, string> = {
   IN_PROGRESS: "blue",
   ON_HOLD: "amber",
   COMPLETED: "teal",
-  CERTIFICATE_ISSUED: "indigo",
+  CERTIFICATE_ISSUED: "brand",
   DROPPED: "red",
   // Module
   YET_TO_START: "slate",
@@ -51,7 +51,7 @@ const toneMap: Record<string, string> = {
   NOT_ELIGIBLE: "slate",
   ELIGIBLE: "green",
   GENERATED: "blue",
-  ISSUED: "indigo",
+  ISSUED: "brand",
   // EMI
   PAID: "green",
   PARTIAL: "amber",

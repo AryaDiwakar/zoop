@@ -93,7 +93,7 @@ export default async function ReportsPage() {
                     <span className="font-medium text-slate-700">{c.name}</span>
                     <span className="font-semibold text-slate-900">{c.count}</span>
                   </div>
-                  <ProgressBar value={pct} tone={pct > 50 ? "green" : "indigo"} />
+                  <ProgressBar value={pct} tone={pct > 50 ? "green" : "brand"} />
                 </div>
               );
             })}

@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { getCurrentUser } from "@/lib/auth";
 import { logAudit } from "@/lib/audit";
+import { parseJsonBody } from "@/lib/http";
 
 export async function POST(
   request: Request,
@@ -13,7 +14,7 @@ export async function POST(
   if (!["SUPER_ADMIN", "COUNSELLOR"].includes(user.role))
     return NextResponse.json({ error: "Forbidden" }, { status: 403 });
 
-  const body = await request.json();
+  const body = await parseJsonBody(request);
   const followUp = await prisma.leadFollowUp.create({
     data: {
       leadId: id,

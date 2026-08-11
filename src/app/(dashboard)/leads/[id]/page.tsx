@@ -111,7 +111,7 @@ export default async function LeadDetailPage({
             >
               <p className="text-sm text-slate-600">
                 This lead was converted to student{" "}
-                <Link href={`/students/${lead.convertedStudent.id}`} className="font-semibold text-indigo-600 hover:underline">
+                <Link href={`/students/${lead.convertedStudent.id}`} className="font-semibold text-brand-600 hover:underline">
                   {lead.convertedStudent.rollNumber} — {lead.convertedStudent.name}
                 </Link>{" "}
                 ({lead.convertedStudent.course.name})
@@ -155,7 +155,7 @@ export default async function LeadDetailPage({
             title="Follow-up History"
             subtitle={`${lead.followUps.length} entries`}
             action={
-              <Link href={`/leads/${lead.id}/edit`} className="text-xs font-medium text-indigo-600 hover:underline">
+              <Link href={`/leads/${lead.id}/edit`} className="text-xs font-medium text-brand-600 hover:underline">
                 Edit lead
               </Link>
             }
@@ -164,7 +164,7 @@ export default async function LeadDetailPage({
               {lead.followUps.length === 0 && <p className="text-sm text-slate-400">No follow-ups yet.</p>}
               {lead.followUps.map((fu) => (
                 <li key={fu.id} className="relative">
-                  <span className="absolute -left-[21px] top-1 h-2.5 w-2.5 rounded-full border-2 border-white bg-indigo-500" />
+                  <span className="absolute -left-[21px] top-1 h-2.5 w-2.5 rounded-full border-2 border-white bg-brand-500" />
                   <p className="text-xs font-medium text-slate-700">{formatDateTime(fu.followUpDate)}</p>
                   <p className="mt-1 text-sm text-slate-600">{fu.discussionNotes || "No notes"}</p>
                   {fu.counsellorRemarks && <p className="mt-1 text-xs italic text-slate-400">{fu.counsellorRemarks}</p>}

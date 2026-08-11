@@ -61,7 +61,7 @@ export default async function AuditPage({
                 </div>
               </td>
               <td className="px-4 py-3">
-                <Badge tone={l.action.includes("DELETE") ? "red" : l.action.includes("CREATE") ? "green" : l.action.includes("LOGIN") || l.action.includes("LOGOUT") ? "slate" : "indigo"}>
+                <Badge tone={l.action.includes("DELETE") ? "red" : l.action.includes("CREATE") ? "green" : l.action.includes("LOGIN") || l.action.includes("LOGOUT") ? "slate" : "brand"}>
                   {l.action}
                 </Badge>
               </td>

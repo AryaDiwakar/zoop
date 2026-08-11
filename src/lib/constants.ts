@@ -3,6 +3,7 @@ export const ROLES = {
   COUNSELLOR: "COUNSELLOR",
   TUTOR: "TUTOR",
   FINANCE: "FINANCE",
+  STUDENT: "STUDENT",
 } as const;
 
 export type Role = (typeof ROLES)[keyof typeof ROLES];
@@ -12,6 +13,7 @@ export const ROLE_LABELS: Record<Role, string> = {
   COUNSELLOR: "Counsellor",
   TUTOR: "Tutor",
   FINANCE: "Finance",
+  STUDENT: "Student",
 };
 
 export const LEAD_SOURCES = [

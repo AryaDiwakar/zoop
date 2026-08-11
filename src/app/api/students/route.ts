@@ -77,6 +77,7 @@ export async function POST(request: Request) {
     registrationFee: Number(body.registrationFee || 0),
     paymentType: body.paymentType || "LUMPSUM",
     courseStartDate,
+    emis: body.emis,
   });
 
   await logAudit({ userId: user.id, action: "STUDENT_CREATE", entity: "Student", entityId: student.id, details: `Direct admission ${rollNumber} — ${student.name} (${course.name})` });

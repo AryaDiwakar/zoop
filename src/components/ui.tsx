@@ -45,13 +45,13 @@ export function StatCard({
   label: string;
   value: ReactNode;
   icon?: ReactNode;
-  tone?: "slate" | "indigo" | "green" | "amber" | "red" | "blue" | "violet" | "teal";
+  tone?: "slate" | "brand" | "green" | "amber" | "red" | "blue" | "violet" | "teal";
   hint?: string;
   link?: string;
 }) {
   const tones: Record<string, string> = {
     slate: "bg-slate-100 text-slate-600",
-    indigo: "bg-indigo-100 text-indigo-600",
+    brand: "bg-brand-100 text-brand-600",
     green: "bg-emerald-100 text-emerald-600",
     amber: "bg-amber-100 text-amber-600",
     red: "bg-rose-100 text-rose-600",
@@ -103,7 +103,7 @@ export function Button({
 }) {
   const variants = {
     primary:
-      "bg-indigo-600 text-white hover:bg-indigo-700 disabled:bg-indigo-300 shadow-sm",
+      "bg-brand-600 text-white hover:bg-brand-700 disabled:bg-brand-300 shadow-sm",
     secondary: "bg-slate-800 text-white hover:bg-slate-700 disabled:bg-slate-400 shadow-sm",
     outline:
       "bg-white text-slate-700 border border-slate-300 hover:bg-slate-50 disabled:text-slate-400",
@@ -136,7 +136,7 @@ export function Button({
 export function Badge({ children, tone = "slate" }: { children: ReactNode; tone?: string }) {
   const tones: Record<string, string> = {
     slate: "bg-slate-100 text-slate-700 border-slate-200",
-    indigo: "bg-indigo-50 text-indigo-700 border-indigo-200",
+    brand: "bg-brand-50 text-brand-700 border-brand-200",
     green: "bg-emerald-50 text-emerald-700 border-emerald-200",
     amber: "bg-amber-50 text-amber-700 border-amber-200",
     red: "bg-rose-50 text-rose-700 border-rose-200",
@@ -186,7 +186,7 @@ export function Input({
       <input
         {...props}
         className={cn(
-          "w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 placeholder:text-slate-400 focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500",
+          "w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 placeholder:text-slate-400 focus:border-brand-500 focus:outline-none focus:ring-1 focus:ring-brand-500",
           props.className
         )}
       />
@@ -205,7 +205,7 @@ export function Select({
       <select
         {...props}
         className={cn(
-          "w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500",
+          "w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 focus:border-brand-500 focus:outline-none focus:ring-1 focus:ring-brand-500",
           props.className
         )}
       >
@@ -225,7 +225,7 @@ export function Textarea({
       <textarea
         {...props}
         className={cn(
-          "w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 placeholder:text-slate-400 focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500",
+          "w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 placeholder:text-slate-400 focus:border-brand-500 focus:outline-none focus:ring-1 focus:ring-brand-500",
           props.className
         )}
       />
@@ -292,9 +292,9 @@ export function EmptyState({ title, subtitle, icon }: { title: string; subtitle?
   );
 }
 
-export function ProgressBar({ value, className, tone = "indigo" }: { value: number; className?: string; tone?: string }) {
+export function ProgressBar({ value, className, tone = "brand" }: { value: number; className?: string; tone?: string }) {
   const tones: Record<string, string> = {
-    indigo: "bg-indigo-500",
+    brand: "bg-brand-500",
     green: "bg-emerald-500",
     amber: "bg-amber-500",
     red: "bg-rose-500",
@@ -321,7 +321,7 @@ export function Avatar({ name, size = "md" }: { name: string; size?: "sm" | "md"
   return (
     <div
       className={cn(
-        "shrink-0 rounded-full bg-indigo-100 text-indigo-700 flex items-center justify-center font-semibold",
+        "shrink-0 rounded-full bg-brand-100 text-brand-700 flex items-center justify-center font-semibold",
         sizes[size]
       )}
     >

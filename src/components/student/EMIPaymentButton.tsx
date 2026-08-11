@@ -56,7 +56,7 @@ export function EMIPaymentButton({
       <button
         type="button"
         onClick={() => setOpen((v) => !v)}
-        className="rounded-md bg-indigo-600 px-2.5 py-1 text-[11px] font-medium text-white hover:bg-indigo-700"
+        className="rounded-md bg-brand-600 px-2.5 py-1 text-[11px] font-medium text-white hover:bg-brand-700"
       >
         {open ? "Cancel" : "Record Payment"}
       </button>

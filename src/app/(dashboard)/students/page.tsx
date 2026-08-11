@@ -106,7 +106,7 @@ export default async function StudentsPage({
                 <div className="flex items-center gap-2">
                   <Avatar name={s.name} size="sm" />
                   <div>
-                    <Link href={`/students/${s.id}`} className="font-medium text-slate-800 hover:text-indigo-600">
+                    <Link href={`/students/${s.id}`} className="font-medium text-slate-800 hover:text-brand-600">
                       {s.name}
                     </Link>
                     <p className="text-[11px] text-slate-400">{s.mobile}</p>
@@ -127,7 +127,7 @@ export default async function StudentsPage({
                 )}
               </td>
               <td className="px-4 py-3">
-                <Link href={`/students/${s.id}`} className="text-xs font-medium text-indigo-600 hover:underline">
+                <Link href={`/students/${s.id}`} className="text-xs font-medium text-brand-600 hover:underline">
                   View
                 </Link>
               </td>

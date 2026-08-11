@@ -86,6 +86,7 @@ export async function POST(
     registrationFee: Number(body.registrationFee || 0),
     paymentType: body.paymentType || "LUMPSUM",
     courseStartDate,
+    emis: body.emis,
   });
 
   await prisma.lead.update({ where: { id }, data: { status: "CONVERTED" } });

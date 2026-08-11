@@ -63,7 +63,7 @@ export default async function PortfolioPage({
         </Card>
         <Card className="p-4">
           <p className="text-xs font-medium text-slate-500">In Progress</p>
-          <p className="mt-1 text-2xl font-bold text-indigo-600">{statusCounts.IN_PROGRESS || 0}</p>
+          <p className="mt-1 text-2xl font-bold text-brand-600">{statusCounts.IN_PROGRESS || 0}</p>
         </Card>
         <Card className="p-4">
           <p className="text-xs font-medium text-slate-500">Submitted / Review</p>
@@ -78,7 +78,7 @@ export default async function PortfolioPage({
             href={`/portfolio${t.value === "ALL" ? "" : `?status=${t.value}`}`}
             className={`rounded-full px-3 py-1 text-xs font-medium transition-colors ${
               (sp.status || "ALL") === t.value
-                ? "bg-indigo-600 text-white"
+                ? "bg-brand-600 text-white"
                 : "bg-slate-100 text-slate-600 hover:bg-slate-200"
             }`}
           >
@@ -105,7 +105,7 @@ export default async function PortfolioPage({
                     <span>Course progress</span>
                     <span className="font-semibold">{done}/{total} modules · {pct}%</span>
                   </div>
-                  <ProgressBar value={pct} tone={pct === 100 ? "green" : "indigo"} />
+                  <ProgressBar value={pct} tone={pct === 100 ? "green" : "brand"} />
                 </div>
                 {portfolio && (
                   <Badge tone={portfolio.status === "APPROVED" ? "green" : portfolio.status === "SUBMITTED" || portfolio.status === "UNDER_REVIEW" ? "amber" : "slate"}>
@@ -131,7 +131,7 @@ export default async function PortfolioPage({
                     </td>
                     <td className="px-4 py-3">
                       <Badge
-                        tone={spItem.status === "APPROVED" ? "green" : spItem.status === "IN_PROGRESS" ? "indigo" : spItem.status === "YET_TO_START" ? "slate" : "amber"}
+                        tone={spItem.status === "APPROVED" ? "green" : spItem.status === "IN_PROGRESS" ? "brand" : spItem.status === "YET_TO_START" ? "slate" : "amber"}
                       >
                         {PROJECT_STATUS_LABELS[spItem.status]}
                       </Badge>
@@ -146,7 +146,7 @@ export default async function PortfolioPage({
                       />
                     </td>
                     <td className="px-4 py-3">
-                      <a href={`/students/${st.id}?tab=portfolio`} className="text-xs font-medium text-indigo-600 hover:underline">Profile</a>
+                      <a href={`/students/${st.id}?tab=portfolio`} className="text-xs font-medium text-brand-600 hover:underline">Profile</a>
                     </td>
                   </tr>
                 ))}

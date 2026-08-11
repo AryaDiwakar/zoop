@@ -54,9 +54,30 @@ export async function createEmiSchedule(params: {
   registrationFee: number;
   paymentType: string;
   courseStartDate: Date;
+  emis?: { dueDate: string; amount: number }[];
 }) {
-  const { studentId, netFee, registrationFee, paymentType, courseStartDate } = params;
+  const { studentId, netFee, paymentType, courseStartDate, emis } = params;
   const remaining = Math.max(0, netFee);
+
+  if (paymentType === "EMI" && emis && emis.length > 0) {
+    const total = emis.reduce((s, e) => s + (Number(e.amount) || 0), 0);
+    const amount = emis[0].amount + (remaining - total);
+
+    for (let i = 0; i < emis.length; i++) {
+      await prisma.eMI.create({
+        data: {
+          studentId,
+          number: i + 1,
+          dueDate: emis[i].dueDate ? new Date(emis[i].dueDate) : courseStartDate,
+          amount: i === 0 ? Math.round(amount) : Math.round(emis[i].amount),
+          balance: i === 0 ? Math.round(amount) : Math.round(emis[i].amount),
+          status: "PENDING",
+        },
+      });
+    }
+    return;
+  }
+
   const numEmis = paymentType === "EMI" ? 6 : 1;
   const amount = Math.round(remaining / numEmis);
 

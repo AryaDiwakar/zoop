@@ -2,7 +2,7 @@ import { prisma } from "@/lib/db";
 import { requireAuth } from "@/lib/auth";
 import { notFound } from "next/navigation";
 import Link from "next/link";
-import { PageHeader, Card, Badge, Table, ProgressBar, Avatar } from "@/components/ui";
+import { PageHeader, Card, Badge, Table, ProgressBar, Avatar, Button } from "@/components/ui";
 import { StatusBadge } from "@/components/StatusBadge";
 import { MarkAttendanceButton } from "@/components/student/MarkAttendanceButton";
 import { ProjectStatusControl } from "@/components/student/ProjectStatusControl";
@@ -58,8 +58,11 @@ export default async function StudentDetailPage({
   });
   if (!student) notFound();
 
+  if (user.role === "STUDENT" && user.studentId !== student.id) notFound();
+
   const canEdit = ["SUPER_ADMIN", "COUNSELLOR", "FINANCE"].includes(user.role);
   const isTutor = user.role === "TUTOR";
+  const isStudentView = user.role === "STUDENT";
 
   // Summary computations
   const totalModules = student.studentModules.length;
@@ -91,13 +94,20 @@ export default async function StudentDetailPage({
   return (
     <div className="animate-fade-in space-y-6">
       <div>
-        <Link href="/students" className="mb-2 inline-flex items-center gap-1 text-xs font-medium text-slate-500 hover:text-slate-700">
-          <ArrowLeft className="h-3.5 w-3.5" /> Back to students
-        </Link>
+        {!isStudentView && (
+          <Link href="/students" className="mb-2 inline-flex items-center gap-1 text-xs font-medium text-slate-500 hover:text-slate-700">
+            <ArrowLeft className="h-3.5 w-3.5" /> Back to students
+          </Link>
+        )}
         <PageHeader
           title={student.name}
           subtitle={`${student.rollNumber} · ${student.course.name}`}
-          actions={<StatusBadge status={student.status} />}
+          actions={
+            <div className="flex items-center gap-2">
+              {canEdit && <Button href={`/students/${student.id}/edit`} size="sm">Edit Details</Button>}
+              <StatusBadge status={student.status} />
+            </div>
+          }
         />
       </div>
 
@@ -108,7 +118,7 @@ export default async function StudentDetailPage({
             key={t.key}
             href={`/students/${student.id}?tab=${t.key}`}
             className={`whitespace-nowrap rounded-lg px-3.5 py-2 text-sm font-medium transition-colors ${
-              tab === t.key ? "bg-indigo-600 text-white" : "text-slate-600 hover:bg-slate-100"
+              tab === t.key ? "bg-brand-600 text-white" : "text-slate-600 hover:bg-slate-100"
             }`}
           >
             {t.label}
@@ -147,7 +157,7 @@ export default async function StudentDetailPage({
               ))}
             </dl>
             {student.lead && (
-              <Link href={`/leads/${student.lead.id}`} className="mt-3 inline-block text-xs font-medium text-indigo-600 hover:underline">
+              <Link href={`/leads/${student.lead.id}`} className="mt-3 inline-block text-xs font-medium text-brand-600 hover:underline">
                 View source lead →
               </Link>
             )}
@@ -278,7 +288,7 @@ export default async function StudentDetailPage({
       {tab === "projects" && (
         <Card className="p-0" title="Project Tracker" subtitle="Evaluate and approve module projects">
           <Table
-            headers={["Module", "Project", "Deliverables", "Difficulty", "Status", "Approved / Submitted"]}
+            headers={["Module", "Project", "Deliverables", "Difficulty", "Status", "Project Link", "Approved / Submitted"]}
           >
             {student.studentProjects.map((sp) => (
               <tr key={sp.id} className="hover:bg-slate-50">
@@ -302,6 +312,20 @@ export default async function StudentDetailPage({
                     <StatusBadge status={sp.status} />
                   )}
                 </td>
+                <td className="px-4 py-2.5 text-xs">
+                  {sp.projectLink ? (
+                    <a
+                      href={sp.projectLink}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="max-w-[180px] truncate inline-block font-medium text-brand-600 hover:underline"
+                    >
+                      {sp.projectLink}
+                    </a>
+                  ) : (
+                    <span className="text-slate-300">—</span>
+                  )}
+                </td>
                 <td className="px-4 py-2.5 text-xs text-slate-500 whitespace-nowrap">
                   {sp.submissionDate ? <>Sub: {formatDate(sp.submissionDate)}</> : "—"}
                   {sp.approvalDate && <> · App: {formatDate(sp.approvalDate)}</>}
@@ -316,7 +340,30 @@ export default async function StudentDetailPage({
         <div className="grid gap-6 lg:grid-cols-2">
           <Card title="Final Portfolio" subtitle="Complete portfolio at course end">
             {portfolio ? (
-              <PortfolioForm studentId={student.id} portfolio={portfolio} />
+              isStudentView ? (
+                <div className="space-y-3 text-sm">
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs text-slate-400">Status</span>
+                    <StatusBadge status={portfolio.status} />
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs text-slate-400">Submitted</span>
+                    <span className="font-medium text-slate-700">{portfolio.submittedAt ? formatDate(portfolio.submittedAt) : "—"}</span>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs text-slate-400">Reviewed</span>
+                    <span className="font-medium text-slate-700">{portfolio.reviewedAt ? formatDate(portfolio.reviewedAt) : "—"}</span>
+                  </div>
+                  {portfolio.facultyReview && (
+                    <div className="rounded-lg bg-slate-50 p-3">
+                      <p className="mb-1 text-[11px] text-slate-400">Faculty Review</p>
+                      <p className="text-xs text-slate-700">{portfolio.facultyReview}</p>
+                    </div>
+                  )}
+                </div>
+              ) : (
+                <PortfolioForm studentId={student.id} portfolio={portfolio} />
+              )
             ) : (
               <p className="text-sm text-slate-400">No portfolio yet.</p>
             )}
@@ -333,7 +380,7 @@ export default async function StudentDetailPage({
                   <div key={k as string} className="flex justify-between gap-3">
                     <span className="text-xs text-slate-400">{k}</span>
                     {v ? (
-                      <a href={v as string} target="_blank" rel="noopener noreferrer" className="max-w-[60%] truncate text-xs font-medium text-indigo-600 hover:underline">
+                      <a href={v as string} target="_blank" rel="noopener noreferrer" className="max-w-[60%] truncate text-xs font-medium text-brand-600 hover:underline">
                         {v}
                       </a>
                     ) : (

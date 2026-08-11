@@ -120,7 +120,7 @@ export default async function AttendancePage({
                 />
               </td>
               <td className="px-4 py-3">
-                <a href={`/students/${sc.student.id}`} className="text-xs font-medium text-indigo-600 hover:underline">
+                <a href={`/students/${sc.student.id}`} className="text-xs font-medium text-brand-600 hover:underline">
                   Profile
                 </a>
               </td>

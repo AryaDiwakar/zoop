@@ -48,7 +48,7 @@ export function ProjectStatusControl({
             setStatus(e.target.value);
             save(e.target.value);
           }}
-          className="rounded-lg border border-slate-300 bg-white px-2 py-1 text-xs text-slate-700 focus:border-indigo-500 focus:outline-none"
+          className="rounded-lg border border-slate-300 bg-white px-2 py-1 text-xs text-slate-700 focus:border-brand-500 focus:outline-none"
         >
           {PROJECT_STATUSES.map((s) => (
             <option key={s} value={s}>{PROJECT_STATUS_LABELS[s]}</option>
@@ -61,14 +61,14 @@ export function ProjectStatusControl({
           value={link}
           onChange={(e) => setLink(e.target.value)}
           placeholder="Project link"
-          className="w-full rounded-lg border border-slate-300 bg-white px-2 py-1 text-xs focus:border-indigo-500 focus:outline-none"
+          className="w-full rounded-lg border border-slate-300 bg-white px-2 py-1 text-xs focus:border-brand-500 focus:outline-none"
         />
         <textarea
           value={feedback}
           onChange={(e) => setFeedback(e.target.value)}
           placeholder="Faculty feedback…"
           rows={2}
-          className="w-full rounded-lg border border-slate-300 bg-white px-2 py-1 text-xs focus:border-indigo-500 focus:outline-none"
+          className="w-full rounded-lg border border-slate-300 bg-white px-2 py-1 text-xs focus:border-brand-500 focus:outline-none"
         />
         <button
           type="button"

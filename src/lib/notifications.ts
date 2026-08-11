@@ -11,14 +11,126 @@ export interface NotificationItem {
   date: string;
 }
 
-export async function getNotifications(): Promise<NotificationItem[]> {
+interface Viewer {
+  id: string;
+  role: string;
+  studentId?: string | null;
+}
+
+function studentScope(user?: Viewer | null): { studentId: string } | {} {
+  if (user?.role === ROLES.STUDENT && user.studentId) return { studentId: user.studentId };
+  return {};
+}
+
+export async function getNotifications(user?: Viewer | null): Promise<NotificationItem[]> {
   const todayStart = startOfDay();
   const todayEnd = endOfDay();
   const monthStart = startOfMonth();
   const monthEnd = endOfMonth();
+  const isStudent = user?.role === ROLES.STUDENT;
   const items: NotificationItem[] = [];
+  const scope = studentScope(user);
 
-  // 1. Lead follow-up due
+  // 1. Recent activities (payments, portfolio, admissions, certificates)
+  const since = new Date();
+  since.setDate(since.getDate() - 7);
+
+  const [recentPayments, recentPortfolios, recentAdmissions, recentCertificates] =
+    await Promise.all([
+      prisma.eMI.findMany({
+        where: { paymentDate: { gte: since }, ...scope },
+        select: {
+          id: true,
+          number: true,
+          amount: true,
+          paymentDate: true,
+          student: { select: { id: true, name: true } },
+        },
+        orderBy: { paymentDate: "desc" },
+        take: 20,
+      }),
+      prisma.portfolio.findMany({
+        where: {
+          OR: [{ submittedAt: { gte: since } }, { reviewedAt: { gte: since } }],
+          ...scope,
+        },
+        select: {
+          id: true,
+          status: true,
+          submittedAt: true,
+          reviewedAt: true,
+          student: { select: { id: true, name: true } },
+        },
+        orderBy: [{ submittedAt: "desc" }, { reviewedAt: "desc" }],
+        take: 20,
+      }),
+      prisma.student.findMany({
+        where: { createdAt: { gte: since }, ...(isStudent && user?.studentId ? { id: user.studentId } : {}) },
+        select: { id: true, name: true, createdAt: true, rollNumber: true },
+        orderBy: { createdAt: "desc" },
+        take: 20,
+      }),
+      prisma.certificate.findMany({
+        where: { issueDate: { gte: since }, ...scope },
+        select: {
+          id: true,
+          certificateNumber: true,
+          issueDate: true,
+          student: { select: { id: true, name: true } },
+        },
+        orderBy: { issueDate: "desc" },
+        take: 20,
+      }),
+    ]);
+
+  for (const p of recentPayments) {
+    items.push({
+      id: p.id,
+      type: "PAYMENT_RECEIVED",
+      title: `Payment received · ${p.student.name}`,
+      detail: `₹${p.amount.toLocaleString("en-IN")} collected for EMI #${p.number}`,
+      href: `/students/${p.student.id}?tab=finance`,
+      date: p.paymentDate?.toISOString() || new Date().toISOString(),
+    });
+  }
+
+  for (const pf of recentPortfolios) {
+    const isSubmit = !!pf.submittedAt;
+    items.push({
+      id: pf.id,
+      type: "PORTFOLIO_ACTIVITY",
+      title: `Portfolio ${isSubmit ? "submitted" : "reviewed"} · ${pf.student.name}`,
+      detail: isSubmit
+        ? `Portfolio submitted by ${pf.student.name}`
+        : `Portfolio status is now ${pf.status.replace(/_/g, " ").toLowerCase()}`,
+      href: `/students/${pf.student.id}?tab=portfolio`,
+      date: (isSubmit ? pf.submittedAt : pf.reviewedAt)?.toISOString() || new Date().toISOString(),
+    });
+  }
+
+  for (const s of recentAdmissions) {
+    items.push({
+      id: s.id,
+      type: "NEW_ADMISSION",
+      title: `New student · ${s.name}`,
+      detail: `${s.rollNumber} admitted`,
+      href: `/students/${s.id}`,
+      date: s.createdAt.toISOString(),
+    });
+  }
+
+  for (const c of recentCertificates) {
+    items.push({
+      id: c.id,
+      type: "CERTIFICATE_ISSUED",
+      title: `Certificate issued · ${c.student.name}`,
+      detail: c.certificateNumber || "Certificate issued",
+      href: `/students/${c.student.id}?tab=certificate`,
+      date: c.issueDate?.toISOString() || new Date().toISOString(),
+    });
+  }
+
+  // 2. Lead follow-up due
   const followUps = await prisma.leadFollowUp.findMany({
     where: {
       nextFollowUpDate: { lte: todayEnd },
@@ -43,11 +155,12 @@ export async function getNotifications(): Promise<NotificationItem[]> {
     });
   }
 
-  // 2. Today's classes
+  // 3. Today's classes
   const todaysClasses = await prisma.studentClass.findMany({
     where: {
       plannedDate: { gte: todayStart, lte: todayEnd },
       attendance: "PENDING",
+      ...scope,
     },
     select: {
       id: true,
@@ -68,11 +181,12 @@ export async function getNotifications(): Promise<NotificationItem[]> {
     });
   }
 
-  // 3. EMI due today
+  // 4. EMI due today
   const emisDue = await prisma.eMI.findMany({
     where: {
       dueDate: { gte: todayStart, lte: todayEnd },
       status: { in: ["PENDING", "PARTIAL"] },
+      ...scope,
     },
     select: {
       id: true,
@@ -93,11 +207,12 @@ export async function getNotifications(): Promise<NotificationItem[]> {
     });
   }
 
-  // 4. Overdue EMIs
+  // 5. Overdue EMIs
   const emisOverdue = await prisma.eMI.findMany({
     where: {
       dueDate: { lt: todayStart },
       status: { in: ["PENDING", "PARTIAL"] },
+      ...scope,
     },
     select: {
       id: true,
@@ -119,12 +234,13 @@ export async function getNotifications(): Promise<NotificationItem[]> {
     });
   }
 
-  // 5. Portfolio pending
+  // 6. Portfolio pending
   const portfoliosPending = await prisma.student.findMany({
     where: {
       status: { in: ["IN_PROGRESS", "ACTIVE", "ON_HOLD"] },
       portfolios: { none: {} },
       expectedCompletionDate: { lte: monthEnd },
+      ...(isStudent && user?.studentId ? { id: user.studentId } : {}),
     },
     select: { id: true, name: true, expectedCompletionDate: true },
     take: 20,
@@ -140,9 +256,9 @@ export async function getNotifications(): Promise<NotificationItem[]> {
     });
   }
 
-  // 6. Certificate pending
+  // 7. Certificate pending
   const certPending = await prisma.student.findMany({
-    where: { status: "COMPLETED" },
+    where: { status: "COMPLETED", ...(isStudent && user?.studentId ? { id: user.studentId } : {}) },
     select: { id: true, name: true, updatedAt: true },
     take: 20,
   });
@@ -157,11 +273,12 @@ export async function getNotifications(): Promise<NotificationItem[]> {
     });
   }
 
-  // 7. Course completion this month
+  // 8. Course completion this month
   const completing = await prisma.student.findMany({
     where: {
       status: { in: ["IN_PROGRESS", "ACTIVE"] },
       expectedCompletionDate: { gte: todayStart, lte: monthEnd },
+      ...(isStudent && user?.studentId ? { id: user.studentId } : {}),
     },
     select: { id: true, name: true, expectedCompletionDate: true, course: { select: { name: true } } },
     take: 20,
@@ -177,13 +294,14 @@ export async function getNotifications(): Promise<NotificationItem[]> {
     });
   }
 
-  items.sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+  items.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
   return items;
 }
 
-export async function getNotificationCount(): Promise<number> {
+export async function getNotificationCount(user?: Viewer | null): Promise<number> {
   const todayStart = startOfDay();
   const todayEnd = endOfDay();
+  const scope = studentScope(user);
 
   const [followups, todaysClasses, emisDue, emisOverdue, portfoliosPending, certPending] =
     await Promise.all([
@@ -194,21 +312,24 @@ export async function getNotificationCount(): Promise<number> {
         },
       }),
       prisma.studentClass.count({
-        where: { plannedDate: { gte: todayStart, lte: todayEnd }, attendance: "PENDING" },
+        where: { plannedDate: { gte: todayStart, lte: todayEnd }, attendance: "PENDING", ...scope },
       }),
       prisma.eMI.count({
-        where: { dueDate: { gte: todayStart, lte: todayEnd }, status: { in: ["PENDING", "PARTIAL"] } },
+        where: { dueDate: { gte: todayStart, lte: todayEnd }, status: { in: ["PENDING", "PARTIAL"] }, ...scope },
       }),
       prisma.eMI.count({
-        where: { dueDate: { lt: todayStart }, status: { in: ["PENDING", "PARTIAL"] } },
+        where: { dueDate: { lt: todayStart }, status: { in: ["PENDING", "PARTIAL"] }, ...scope },
       }),
       prisma.student.count({
         where: {
           status: { in: ["IN_PROGRESS", "ACTIVE", "ON_HOLD"] },
           portfolios: { none: {} },
+          ...(user?.role === ROLES.STUDENT && user.studentId ? { id: user.studentId } : {}),
         },
       }),
-      prisma.student.count({ where: { status: "COMPLETED" } }),
+      prisma.student.count({
+        where: { status: "COMPLETED", ...(user?.role === ROLES.STUDENT && user.studentId ? { id: user.studentId } : {}) },
+      }),
     ]);
 
   return followups + todaysClasses + emisDue + emisOverdue + portfoliosPending + certPending;

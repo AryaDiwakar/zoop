@@ -27,9 +27,7 @@ export function Topbar({
           <Menu className="h-5 w-5" />
         </button>
         <div className="lg:hidden flex items-center gap-2">
-          <div className="flex h-7 w-7 items-center justify-center rounded-md bg-indigo-600 text-white text-[11px] font-black">
-            Z
-          </div>
+          <img src="/zoop-logo.png" alt="Zoop" className="h-7 w-auto object-contain" />
           <span className="text-sm font-bold text-slate-900">Zoop ERP</span>
         </div>
       </div>
