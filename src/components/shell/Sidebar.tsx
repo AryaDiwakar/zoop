@@ -83,12 +83,6 @@ export function Sidebar({ role, name, studentId }: { role: string; name: string;
             },
           ],
         },
-        {
-          group: "General",
-          items: [
-            { label: "Notifications", href: "/notifications", icon: BellRing, roles: [ROLES.STUDENT] },
-          ],
-        },
       ]
     : NAV.map((g) => ({
         ...g,

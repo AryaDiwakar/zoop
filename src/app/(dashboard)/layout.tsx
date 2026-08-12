@@ -30,6 +30,7 @@ export default async function DashboardLayout({
       name={user.name}
       email={user.email}
       role={user.role}
+      studentId={user.studentId ?? undefined}
       notificationCount={notificationCount}
     >
       {children}

@@ -13,7 +13,9 @@ export async function POST(
   const { id: studentId } = await params;
   const user = await getCurrentUser();
   if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  if (!["SUPER_ADMIN", "TUTOR"].includes(user.role))
+  const isStaff = ["SUPER_ADMIN", "TUTOR"].includes(user.role);
+  const isStudent = user.role === "STUDENT";
+  if (!isStaff && !isStudent)
     return NextResponse.json({ error: "Forbidden" }, { status: 403 });
 
   const body = await request.json();
@@ -21,6 +23,7 @@ export async function POST(
 
   try {
     if (type === "module") {
+      if (!isStaff) return NextResponse.json({ error: "Forbidden" }, { status: 403 });
       const sm = await prisma.studentModule.findUnique({ where: { id: body.id }, include: { module: true } });
       if (!sm) return NextResponse.json({ error: "Module not found" }, { status: 404 });
       const status = MODULE_STATUSES.includes(body.status) ? body.status : "YET_TO_START";
@@ -43,6 +46,23 @@ export async function POST(
     } else if (type === "project") {
       const sp = await prisma.studentProject.findUnique({ where: { id: body.id }, include: { project: true } });
       if (!sp) return NextResponse.json({ error: "Project not found" }, { status: 404 });
+      if (isStudent) {
+        if (sp.studentId !== studentId)
+          return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+        const allowed = ["SUBMITTED"];
+        const status = allowed.includes(body.status) ? body.status : "SUBMITTED";
+        await prisma.studentProject.update({
+          where: { id: body.id },
+          data: {
+            status,
+            submissionDate: sp.submissionDate || new Date(),
+            projectLink: body.projectLink ?? sp.projectLink,
+            submittedNote: body.submittedNote ?? sp.submittedNote,
+          },
+        });
+        await logAudit({ userId: user.id, action: "PROJECT_STATUS_UPDATE", entity: "StudentProject", entityId: body.id, details: `Student submitted project ${sp.project.name}` });
+        return NextResponse.json({ ok: true });
+      }
       const status = PROJECT_STATUSES.includes(body.status) ? body.status : "YET_TO_START";
       await prisma.studentProject.update({
         where: { id: body.id },
@@ -56,6 +76,7 @@ export async function POST(
       });
       await logAudit({ userId: user.id, action: "PROJECT_STATUS_UPDATE", entity: "StudentProject", entityId: body.id, details: `Project ${sp.project.name} → ${status}` });
     } else if (type === "class") {
+      if (!isStaff) return NextResponse.json({ error: "Forbidden" }, { status: 403 });
       const sc = await prisma.studentClass.findUnique({ where: { id: body.id }, include: { class: true } });
       if (!sc) return NextResponse.json({ error: "Class not found" }, { status: 404 });
       await prisma.studentClass.update({

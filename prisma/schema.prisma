@@ -273,6 +273,7 @@ model StudentProject {
   approvalDate  DateTime?
   facultyFeedback String?
   projectLink   String?
+  submittedNote String?
   createdAt     DateTime  @default(now())
 
   @@unique([studentId, projectId])

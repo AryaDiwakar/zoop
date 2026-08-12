@@ -3,33 +3,56 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Button, Input, Textarea, Field } from "@/components/ui";
+import { Pencil, Plus } from "lucide-react";
 
-export function ClassForm({ moduleId, nextNumber }: { moduleId: string; nextNumber: number }) {
+export interface ClassData {
+  id: string;
+  number: number;
+  name: string;
+  learningTopic: string | null;
+  practicalExercise: string | null;
+  durationMinutes: number;
+  tutorNotes: string | null;
+}
+
+export function ClassForm({
+  moduleId,
+  nextNumber,
+  initial,
+}: {
+  moduleId: string;
+  nextNumber: number;
+  initial?: ClassData;
+}) {
   const router = useRouter();
   const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const isEdit = !!initial;
 
   async function onSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
     setError(null);
     setLoading(true);
     const form = new FormData(e.currentTarget);
-    const payload = Object.fromEntries(form.entries()) as Record<string, string>;
+    const payload = {
+      number: Number(form.get("number")),
+      name: (form.get("name") as string) || "",
+      learningTopic: ((form.get("learningTopic") as string) || null) as string | null,
+      practicalExercise: ((form.get("practicalExercise") as string) || null) as string | null,
+      tutorNotes: ((form.get("tutorNotes") as string) || null) as string | null,
+      durationMinutes: Number(form.get("durationMinutes") || 120),
+    };
 
     try {
-      const res = await fetch("/api/curriculum/classes", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          moduleId,
-          number: Number(payload.number),
-          name: payload.name,
-          learningTopic: payload.learningTopic || null,
-          practicalExercise: payload.practicalExercise || null,
-          durationMinutes: Number(payload.durationMinutes || 120),
-        }),
-      });
+      const res = await fetch(
+        isEdit ? `/api/curriculum/classes/${initial.id}` : "/api/curriculum/classes",
+        {
+          method: isEdit ? "PATCH" : "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ ...payload, moduleId }),
+        }
+      );
       const data = await res.json();
       if (!res.ok) {
         setError(data.error || "Failed to save class");
@@ -45,7 +68,12 @@ export function ClassForm({ moduleId, nextNumber }: { moduleId: string; nextNumb
   }
 
   if (!open) {
-    return <Button size="sm" variant="ghost" onClick={() => setOpen(true)}>+ Class</Button>;
+    return (
+      <Button size="sm" variant={isEdit ? "ghost" : "ghost"} onClick={() => setOpen(true)}>
+        {isEdit ? <Pencil className="h-3.5 w-3.5" /> : <Plus className="h-3.5 w-3.5" />}
+        {isEdit ? "Edit" : "Class"}
+      </Button>
+    );
   }
 
   return (
@@ -53,24 +81,27 @@ export function ClassForm({ moduleId, nextNumber }: { moduleId: string; nextNumb
       {error && <p className="text-xs text-rose-600">{error}</p>}
       <div className="grid gap-3 sm:grid-cols-[90px_1fr_110px]">
         <Field label="#">
-          <Input name="number" type="number" min={1} required defaultValue={nextNumber} />
+          <Input name="number" type="number" min={1} required defaultValue={initial?.number ?? nextNumber} />
         </Field>
         <Field label="Class Name">
-          <Input name="name" required placeholder="e.g. Variables & Data Types" />
+          <Input name="name" required placeholder="e.g. Variables & Data Types" defaultValue={initial?.name ?? ""} />
         </Field>
         <Field label="Minutes">
-          <Input name="durationMinutes" type="number" min={15} defaultValue={120} />
+          <Input name="durationMinutes" type="number" min={15} defaultValue={initial?.durationMinutes ?? 120} />
         </Field>
       </div>
       <Field label="Learning Topic">
-        <Textarea name="learningTopic" rows={1} />
+        <Textarea name="learningTopic" rows={1} defaultValue={initial?.learningTopic || ""} />
       </Field>
       <Field label="Practical Exercise">
-        <Textarea name="practicalExercise" rows={1} />
+        <Textarea name="practicalExercise" rows={1} defaultValue={initial?.practicalExercise || ""} />
+      </Field>
+      <Field label="Tutor Notes">
+        <Textarea name="tutorNotes" rows={1} defaultValue={initial?.tutorNotes || ""} />
       </Field>
       <div className="flex justify-end gap-2">
         <Button size="sm" variant="ghost" onClick={() => setOpen(false)}>Cancel</Button>
-        <Button size="sm" type="submit" disabled={loading}>{loading ? "Saving…" : "Add Class"}</Button>
+        <Button size="sm" type="submit" disabled={loading}>{loading ? "Saving…" : isEdit ? "Save Class" : "Add Class"}</Button>
       </div>
     </form>
   );

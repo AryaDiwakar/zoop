@@ -6,7 +6,7 @@ import { ROLES } from "@/lib/constants";
 export const metadata = { title: "Notifications" };
 
 export default async function NotificationsPage() {
-  const user = await requireRole(ROLES.SUPER_ADMIN, ROLES.COUNSELLOR, ROLES.TUTOR, ROLES.FINANCE, ROLES.STUDENT);
+  const user = await requireRole(ROLES.SUPER_ADMIN, ROLES.COUNSELLOR, ROLES.TUTOR, ROLES.FINANCE);
 
   const items = await getNotifications(user);
 

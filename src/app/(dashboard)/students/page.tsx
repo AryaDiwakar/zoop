@@ -1,8 +1,8 @@
 import { prisma } from "@/lib/db";
-import { requireAuth } from "@/lib/auth";
+import { requireRole } from "@/lib/auth";
 import { PageHeader, Button, Select, Input, Card, Table, EmptyState, Avatar, Badge } from "@/components/ui";
 import { StatusBadge } from "@/components/StatusBadge";
-import { STUDENT_STATUSES, STUDENT_STATUS_LABELS } from "@/lib/constants";
+import { STUDENT_STATUSES, STUDENT_STATUS_LABELS, ROLES } from "@/lib/constants";
 import { formatDate } from "@/lib/utils";
 import Link from "next/link";
 
@@ -13,7 +13,7 @@ export default async function StudentsPage({
 }: {
   searchParams: Promise<{ q?: string; status?: string; course?: string; tutor?: string; batch?: string }>;
 }) {
-  const user = await requireAuth();
+  const user = await requireRole(ROLES.SUPER_ADMIN, ROLES.COUNSELLOR, ROLES.TUTOR, ROLES.FINANCE);
   const sp = await searchParams;
 
   const where: Record<string, unknown> = {};

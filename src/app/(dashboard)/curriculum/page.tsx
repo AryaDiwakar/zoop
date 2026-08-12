@@ -66,6 +66,7 @@ export default async function CurriculumPage({
                     {m.description && <p className="mt-0.5 text-xs text-slate-500">{m.description}</p>}
                   </div>
                   <div className="flex shrink-0 gap-1.5">
+                    <ModuleForm courseId={course.id} nextNumber={m.number} initial={m} />
                     <ClassForm moduleId={m.id} nextNumber={(m.classes.at(-1)?.number || 0) + 1} />
                     <ProjectForm courseId={course.id} moduleId={m.id} />
                   </div>
@@ -77,8 +78,13 @@ export default async function CurriculumPage({
                     {m.classes.length === 0 && <p className="text-xs text-slate-400">No classes.</p>}
                     <ul className="space-y-1.5">
                       {m.classes.map((c) => (
-                        <li key={c.id} className="text-xs text-slate-700">
-                          <span className="font-mono font-semibold text-slate-500">C{c.number}</span> · {c.name}
+                        <li key={c.id} className="rounded-md bg-white p-1.5">
+                          <div className="flex items-center justify-between gap-2">
+                            <span className="text-xs text-slate-700">
+                              <span className="font-mono font-semibold text-slate-500">C{c.number}</span> · {c.name}
+                            </span>
+                            <ClassForm moduleId={m.id} nextNumber={c.number} initial={c} />
+                          </div>
                         </li>
                       ))}
                     </ul>
@@ -88,13 +94,18 @@ export default async function CurriculumPage({
                     {m.projects.length === 0 && <p className="text-xs text-slate-400">No projects.</p>}
                     <ul className="space-y-1.5">
                       {m.projects.map((p) => (
-                        <li key={p.id} className="text-xs text-slate-700">
-                          {p.name}{" "}
-                          {p.difficulty && (
-                            <Badge tone={p.difficulty === "ADVANCED" ? "red" : p.difficulty === "INTERMEDIATE" ? "amber" : "blue"}>
-                              {DIFFICULTY_LABELS[p.difficulty]}
-                            </Badge>
-                          )}
+                        <li key={p.id} className="rounded-md bg-white p-1.5">
+                          <div className="flex items-center justify-between gap-2">
+                            <span className="flex items-center gap-1.5 text-xs text-slate-700">
+                              {p.name}{" "}
+                              {p.difficulty && (
+                                <Badge tone={p.difficulty === "ADVANCED" ? "red" : p.difficulty === "INTERMEDIATE" ? "amber" : "blue"}>
+                                  {DIFFICULTY_LABELS[p.difficulty]}
+                                </Badge>
+                              )}
+                            </span>
+                            <ProjectForm courseId={course.id} moduleId={m.id} initial={p} />
+                          </div>
                         </li>
                       ))}
                     </ul>

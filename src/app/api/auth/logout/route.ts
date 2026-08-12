@@ -8,5 +8,6 @@ export async function POST() {
     await logAudit({ userId: session.userId, action: "LOGOUT", entity: "User" });
   }
   await destroySession();
-  return NextResponse.redirect(new URL("/login", process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : "http://localhost:3000"));
+  // 303 See Other so the redirect performs a GET to /login (307 would replay the POST).
+  return NextResponse.redirect(new URL("/login", process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : "http://localhost:3000"), 303);
 }

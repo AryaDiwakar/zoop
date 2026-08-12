@@ -6,6 +6,7 @@ import { PageHeader, Card, Badge, Table, ProgressBar, Avatar, Button } from "@/c
 import { StatusBadge } from "@/components/StatusBadge";
 import { MarkAttendanceButton } from "@/components/student/MarkAttendanceButton";
 import { ProjectStatusControl } from "@/components/student/ProjectStatusControl";
+import { ProjectStudentSubmit } from "@/components/student/ProjectStudentSubmit";
 import { PortfolioForm } from "@/components/student/PortfolioForm";
 import { EMIPaymentButton } from "@/components/student/EMIPaymentButton";
 import { CertificateControl } from "@/components/student/CertificateControl";
@@ -300,7 +301,15 @@ export default async function StudentDetailPage({
                 <td className="px-4 py-2.5 text-xs text-slate-600">{sp.project.estimatedHours}h</td>
                 <td className="px-4 py-2.5 text-xs text-slate-600">{sp.project.difficulty || "—"}</td>
                 <td className="px-4 py-2.5">
-                  {isTutor || user.role === "SUPER_ADMIN" ? (
+                  {isStudentView ? (
+                    <ProjectStudentSubmit
+                      studentId={student.id}
+                      id={sp.id}
+                      current={sp.status}
+                      projectLink={sp.projectLink}
+                      submittedNote={sp.submittedNote}
+                    />
+                  ) : isTutor || user.role === "SUPER_ADMIN" ? (
                     <ProjectStatusControl
                       studentId={student.id}
                       id={sp.id}
@@ -468,7 +477,22 @@ export default async function StudentDetailPage({
       {tab === "certificate" && (
         <div className="grid gap-6 lg:grid-cols-2">
           <Card title="Certificate Management" subtitle="Track eligibility and issuance">
-            {certificate ? (
+            {isStudentView ? (
+              <div className="space-y-3 text-sm">
+                <div className="flex items-center justify-between">
+                  <span className="text-xs text-slate-400">Status</span>
+                  {certificate ? <StatusBadge status={certificate.status} /> : <Badge tone="slate">—</Badge>}
+                </div>
+                <div className="flex items-center justify-between">
+                  <span className="text-xs text-slate-400">Certificate Number</span>
+                  <span className="font-medium text-slate-700">{certificate?.certificateNumber || "—"}</span>
+                </div>
+                <div className="flex items-center justify-between">
+                  <span className="text-xs text-slate-400">Issue Date</span>
+                  <span className="font-medium text-slate-700">{certificate?.issueDate ? formatDate(certificate.issueDate) : "—"}</span>
+                </div>
+              </div>
+            ) : certificate ? (
               <CertificateControl studentId={student.id} certificate={certificate} />
             ) : (
               <p className="text-sm text-slate-400">No certificate record.</p>
