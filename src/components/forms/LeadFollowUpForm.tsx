@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { Button, Input, Select, Textarea, Field } from "@/components/ui";
+import { Button, Input, Select, Textarea } from "@/components/ui";
 import { CONTACT_METHODS, LEAD_STATUSES, LEAD_STATUS_LABELS } from "@/lib/constants";
 
 export function LeadFollowUpForm({ leadId, onDone }: { leadId: string; onDone?: () => void }) {
@@ -12,24 +12,23 @@ export function LeadFollowUpForm({ leadId, onDone }: { leadId: string; onDone?: 
 
   async function onSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
+    const formEl = e.currentTarget;
     setError(null);
     setLoading(true);
-    const form = new FormData(e.currentTarget);
-    const payload = Object.fromEntries(form.entries());
+    const payload = Object.fromEntries(new FormData(formEl).entries());
     try {
       const res = await fetch(`/api/leads/${leadId}/followups`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
       });
-      const data = await res.json();
+      const data = await res.json().catch(() => ({}));
       if (!res.ok) {
         setError(data.error || "Failed to add follow-up");
         setLoading(false);
         return;
       }
-      form.get("followUpDate") ? null : null;
-      e.currentTarget.reset();
+      formEl.reset();
       router.refresh();
       onDone?.();
       setLoading(false);

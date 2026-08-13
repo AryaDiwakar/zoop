@@ -8,6 +8,7 @@ import { MarkAttendanceButton } from "@/components/student/MarkAttendanceButton"
 import { ProjectStatusControl } from "@/components/student/ProjectStatusControl";
 import { ProjectStudentSubmit } from "@/components/student/ProjectStudentSubmit";
 import { PortfolioForm } from "@/components/student/PortfolioForm";
+import { PortfolioStudentSubmit } from "@/components/student/PortfolioStudentSubmit";
 import { EMIPaymentButton } from "@/components/student/EMIPaymentButton";
 import { CertificateControl } from "@/components/student/CertificateControl";
 import { formatDate, formatINR } from "@/lib/utils";
@@ -36,7 +37,13 @@ export default async function StudentDetailPage({
   const { id } = await params;
   const sp = await searchParams;
   const user = await requireAuth();
-  const tab = TABS.some((t) => t.key === sp.tab) ? sp.tab! : "overview";
+
+  const isStudentView = user.role === "STUDENT";
+  const visibleTabs = isStudentView
+    ? TABS.filter((t) => ["projects", "portfolio"].includes(t.key))
+    : TABS;
+  const defaultTab = isStudentView ? "projects" : "overview";
+  const tab = visibleTabs.some((t) => t.key === sp.tab) ? sp.tab! : defaultTab;
 
   const student = await prisma.student.findUnique({
     where: { id },
@@ -63,7 +70,6 @@ export default async function StudentDetailPage({
 
   const canEdit = ["SUPER_ADMIN", "COUNSELLOR", "FINANCE"].includes(user.role);
   const isTutor = user.role === "TUTOR";
-  const isStudentView = user.role === "STUDENT";
 
   // Summary computations
   const totalModules = student.studentModules.length;
@@ -114,7 +120,7 @@ export default async function StudentDetailPage({
 
       {/* Tabs */}
       <div className="flex gap-1 overflow-x-auto rounded-xl border border-slate-200 bg-white p-1 shadow-sm">
-        {TABS.map((t) => (
+        {visibleTabs.map((t) => (
           <Link
             key={t.key}
             href={`/students/${student.id}?tab=${t.key}`}
@@ -347,32 +353,11 @@ export default async function StudentDetailPage({
 
       {tab === "portfolio" && (
         <div className="grid gap-6 lg:grid-cols-2">
-          <Card title="Final Portfolio" subtitle="Complete portfolio at course end">
-            {portfolio ? (
-              isStudentView ? (
-                <div className="space-y-3 text-sm">
-                  <div className="flex items-center justify-between">
-                    <span className="text-xs text-slate-400">Status</span>
-                    <StatusBadge status={portfolio.status} />
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <span className="text-xs text-slate-400">Submitted</span>
-                    <span className="font-medium text-slate-700">{portfolio.submittedAt ? formatDate(portfolio.submittedAt) : "—"}</span>
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <span className="text-xs text-slate-400">Reviewed</span>
-                    <span className="font-medium text-slate-700">{portfolio.reviewedAt ? formatDate(portfolio.reviewedAt) : "—"}</span>
-                  </div>
-                  {portfolio.facultyReview && (
-                    <div className="rounded-lg bg-slate-50 p-3">
-                      <p className="mb-1 text-[11px] text-slate-400">Faculty Review</p>
-                      <p className="text-xs text-slate-700">{portfolio.facultyReview}</p>
-                    </div>
-                  )}
-                </div>
-              ) : (
-                <PortfolioForm studentId={student.id} portfolio={portfolio} />
-              )
+          <Card title="Final Portfolio" subtitle="Upload your portfolio links and submit for review">
+            {isStudentView ? (
+              <PortfolioStudentSubmit studentId={student.id} portfolio={portfolio} />
+            ) : portfolio ? (
+              <PortfolioForm studentId={student.id} portfolio={portfolio} />
             ) : (
               <p className="text-sm text-slate-400">No portfolio yet.</p>
             )}
