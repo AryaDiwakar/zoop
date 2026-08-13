@@ -33,7 +33,7 @@ export default async function LeadsPage({
     prisma.lead.findMany({
       where,
       include: { counsellor: { select: { name: true } }, followUps: { orderBy: { followUpDate: "desc" }, take: 1 }, convertedStudent: { select: { id: true, rollNumber: true } } },
-      orderBy: { leadDate: "desc" },
+      orderBy: { updatedAt: "desc" },
     }),
     prisma.user.findMany({ where: { role: "COUNSELLOR" }, select: { id: true, name: true } }),
   ]);

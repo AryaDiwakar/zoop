@@ -39,7 +39,7 @@ export default async function StudentsPage({
         portfolios: true,
         _count: { select: { studentClasses: { where: { attendance: "PRESENT" } } } },
       },
-      orderBy: { joiningDate: "desc" },
+      orderBy: { updatedAt: "desc" },
     }),
     prisma.course.findMany({ select: { id: true, name: true } }),
     prisma.user.findMany({ where: { role: "TUTOR" }, select: { id: true, name: true } }),

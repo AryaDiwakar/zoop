@@ -36,7 +36,7 @@ export default async function AttendancePage({
         student: { select: { id: true, name: true, rollNumber: true, course: { select: { name: true } } } },
         class: { include: { module: { include: { course: true } } } },
       },
-      orderBy: [{ plannedDate: "asc" }, { class: { module: { number: "asc" } } }, { class: { number: "asc" } }],
+      orderBy: [{ plannedDate: "desc" }, { createdAt: "desc" }],
     }),
     prisma.studentClass.groupBy({
       by: ["attendance"],

@@ -47,7 +47,7 @@ export default async function FinancePage() {
       }),
       prisma.eMI.findMany({
         include: { student: { select: { id: true, name: true, rollNumber: true } } },
-        orderBy: [{ student: { name: "asc" } }, { number: "asc" }],
+        orderBy: { updatedAt: "desc" },
       }),
     ]);
 

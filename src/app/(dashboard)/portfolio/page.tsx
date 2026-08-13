@@ -25,10 +25,10 @@ export default async function PortfolioPage({
         studentModules: { include: { module: true }, orderBy: { module: { number: "asc" } } },
         studentProjects: {
           include: { project: { include: { module: true } } },
-          orderBy: { project: { module: { number: "asc" } } },
+          orderBy: { createdAt: "desc" },
         },
       },
-      orderBy: { name: "asc" },
+      orderBy: { updatedAt: "desc" },
     }),
     prisma.studentProject.groupBy({
       by: ["status"],

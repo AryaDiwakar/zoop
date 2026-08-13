@@ -39,11 +39,7 @@ export default async function StudentDetailPage({
   const user = await requireAuth();
 
   const isStudentView = user.role === "STUDENT";
-  const visibleTabs = isStudentView
-    ? TABS.filter((t) => ["projects", "portfolio"].includes(t.key))
-    : TABS;
-  const defaultTab = isStudentView ? "projects" : "overview";
-  const tab = visibleTabs.some((t) => t.key === sp.tab) ? sp.tab! : defaultTab;
+  const tab = TABS.some((t) => t.key === sp.tab) ? sp.tab! : "overview";
 
   const student = await prisma.student.findUnique({
     where: { id },
@@ -55,12 +51,12 @@ export default async function StudentDetailPage({
       studentModules: { include: { module: { include: { course: true, classes: true, projects: true } } }, orderBy: { module: { number: "asc" } } },
       studentClasses: {
         include: { class: { include: { module: true } } },
-        orderBy: [{ class: { module: { number: "asc" } } }, { class: { number: "asc" } }],
+        orderBy: [{ plannedDate: "desc" }, { createdAt: "desc" }],
       },
-      studentProjects: { include: { project: { include: { module: true } } }, orderBy: { project: { module: { number: "asc" } } } },
+      studentProjects: { include: { project: { include: { module: true } } }, orderBy: { createdAt: "desc" } },
       portfolios: true,
       availabilities: { orderBy: { dayOfWeek: "asc" } },
-      emis: { orderBy: { number: "asc" } },
+      emis: { orderBy: { updatedAt: "desc" } },
       certificates: true,
     },
   });
@@ -86,7 +82,7 @@ export default async function StudentDetailPage({
   const totalFee = student.netFee;
   const paid = student.emis.reduce((s, e) => s + e.amountPaid, 0);
   const outstanding = Math.max(0, totalFee - paid);
-  const nextEmi = student.emis.find((e) => e.status !== "PAID");
+  const nextEmi = [...student.emis].sort((a, b) => a.number - b.number).find((e) => e.status !== "PAID");
   const certificate = student.certificates[0];
 
   const summaryRows = [
@@ -120,7 +116,7 @@ export default async function StudentDetailPage({
 
       {/* Tabs */}
       <div className="flex gap-1 overflow-x-auto rounded-xl border border-slate-200 bg-white p-1 shadow-sm">
-        {visibleTabs.map((t) => (
+        {TABS.map((t) => (
           <Link
             key={t.key}
             href={`/students/${student.id}?tab=${t.key}`}
