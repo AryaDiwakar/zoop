@@ -44,6 +44,28 @@ export async function POST(
       }
       await logAudit({ userId: user.id, action: "PROGRESS_UPDATE", entity: "StudentModule", entityId: body.id, details: `Module ${sm.module.name} → ${status}` });
     } else if (type === "project") {
+      if (body.create) {
+        if (!isStudent) return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+        const name = String(body.name || "").trim();
+        if (!name) return NextResponse.json({ error: "Project name is required" }, { status: 400 });
+        const student = await prisma.student.findUnique({ where: { id: studentId }, select: { courseId: true } });
+        if (!student) return NextResponse.json({ error: "Student not found" }, { status: 404 });
+        const project = await prisma.project.create({
+          data: { courseId: student.courseId, moduleId: null, name, isSelfProject: true },
+        });
+        const created = await prisma.studentProject.create({
+          data: {
+            studentId,
+            projectId: project.id,
+            status: "SUBMITTED",
+            submissionDate: new Date(),
+            projectLink: String(body.projectLink || "").trim() || null,
+            submittedNote: String(body.submittedNote || "").trim() || null,
+          },
+        });
+        await logAudit({ userId: user.id, action: "PROJECT_CREATE", entity: "StudentProject", entityId: created.id, details: `Student added personal project — ${project.name}` });
+        return NextResponse.json({ ok: true });
+      }
       const sp = await prisma.studentProject.findUnique({ where: { id: body.id }, include: { project: true } });
       if (!sp) return NextResponse.json({ error: "Project not found" }, { status: 404 });
       if (isStudent) {
@@ -60,6 +82,9 @@ export async function POST(
             submittedNote: body.submittedNote ?? sp.submittedNote,
           },
         });
+        if (sp.project.isSelfProject && typeof body.name === "string" && body.name.trim()) {
+          await prisma.project.update({ where: { id: sp.projectId }, data: { name: body.name.trim() } });
+        }
         await logAudit({ userId: user.id, action: "PROJECT_STATUS_UPDATE", entity: "StudentProject", entityId: body.id, details: `Student submitted project ${sp.project.name}` });
         return NextResponse.json({ ok: true });
       }

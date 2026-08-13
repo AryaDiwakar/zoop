@@ -152,6 +152,7 @@ model Project {
   difficulty         String?
   estimatedHours     Int      @default(0)
   evaluationCriteria String?
+  isSelfProject      Boolean  @default(false) // student-added personal project
   createdAt          DateTime @default(now())
   updatedAt          DateTime @updatedAt
 

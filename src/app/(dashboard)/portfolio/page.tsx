@@ -127,7 +127,7 @@ export default async function PortfolioPage({
                       )}
                     </td>
                     <td className="px-4 py-3 text-xs text-slate-600">
-                      {spItem.project.module ? `M${spItem.project.module.number} · ${spItem.project.module.name}` : "Cross-module"}
+                      {spItem.project.isSelfProject ? "Self" : spItem.project.module ? `M${spItem.project.module.number} · ${spItem.project.module.name}` : "Cross-module"}
                     </td>
                     <td className="px-4 py-3">
                       <Badge

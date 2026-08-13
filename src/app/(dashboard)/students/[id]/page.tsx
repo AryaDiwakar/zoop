@@ -7,6 +7,7 @@ import { StatusBadge } from "@/components/StatusBadge";
 import { MarkAttendanceButton } from "@/components/student/MarkAttendanceButton";
 import { ProjectStatusControl } from "@/components/student/ProjectStatusControl";
 import { ProjectStudentSubmit } from "@/components/student/ProjectStudentSubmit";
+import { ProjectStudentCreate } from "@/components/student/ProjectStudentCreate";
 import { PortfolioForm } from "@/components/student/PortfolioForm";
 import { PortfolioStudentSubmit } from "@/components/student/PortfolioStudentSubmit";
 import { EMIPaymentButton } from "@/components/student/EMIPaymentButton";
@@ -290,12 +291,13 @@ export default async function StudentDetailPage({
 
       {tab === "projects" && (
         <Card className="p-0" title="Project Tracker" subtitle="Evaluate and approve module projects">
+          {isStudentView && <div className="border-b border-slate-200 p-4"><ProjectStudentCreate studentId={student.id} /></div>}
           <Table
             headers={["Module", "Project", "Deliverables", "Difficulty", "Status", "Project Link", "Approved / Submitted"]}
           >
             {student.studentProjects.map((sp) => (
               <tr key={sp.id} className="hover:bg-slate-50">
-                <td className="px-4 py-2.5 text-xs text-slate-600">{sp.project.module?.name || "Final"}</td>
+                <td className="px-4 py-2.5 text-xs text-slate-600">{sp.project.isSelfProject ? "Self" : sp.project.module?.name || "Final"}</td>
                 <td className="px-4 py-2.5">
                   <p className="text-xs font-medium text-slate-800">{sp.project.name}</p>
                   <p className="text-[11px] text-slate-400">{sp.project.deliverables || ""}</p>
@@ -310,6 +312,8 @@ export default async function StudentDetailPage({
                       current={sp.status}
                       projectLink={sp.projectLink}
                       submittedNote={sp.submittedNote}
+                      projectName={sp.project.name}
+                      self={sp.project.isSelfProject}
                     />
                   ) : isTutor || user.role === "SUPER_ADMIN" ? (
                     <ProjectStatusControl

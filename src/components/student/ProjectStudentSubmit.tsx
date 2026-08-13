@@ -10,23 +10,32 @@ export function ProjectStudentSubmit({
   current,
   projectLink,
   submittedNote,
+  projectName,
+  self,
 }: {
   studentId: string;
   id: string;
   current: string;
   projectLink?: string | null;
   submittedNote?: string | null;
+  projectName?: string | null;
+  self?: boolean;
 }) {
   const router = useRouter();
+  const [name, setName] = useState(projectName || "");
   const [link, setLink] = useState(projectLink || "");
   const [note, setNote] = useState(submittedNote || "");
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const canSubmit = ["YET_TO_START", "IN_PROGRESS", "REWORK_REQUIRED"].includes(current);
+  const canSubmit = self || ["YET_TO_START", "IN_PROGRESS", "REWORK_REQUIRED"].includes(current);
 
   async function submit() {
     setError(null);
+    if (self && !name.trim()) {
+      setError("Add a project name.");
+      return;
+    }
     if (!link.trim()) {
       setError("Add the project link before submitting.");
       return;
@@ -40,6 +49,7 @@ export function ProjectStudentSubmit({
           type: "project",
           id,
           status: "SUBMITTED",
+          name: self ? name.trim() : undefined,
           projectLink: link.trim(),
           submittedNote: note.trim() || null,
         }),
@@ -63,6 +73,14 @@ export function ProjectStudentSubmit({
       <StatusBadge status={current} />
       {canSubmit && (
         <div className="flex flex-col gap-1.5">
+          {self && (
+            <input
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              placeholder="Project name (required)"
+              className="w-full rounded-lg border border-slate-300 bg-white px-2 py-1 text-xs focus:border-brand-500 focus:outline-none"
+            />
+          )}
           <input
             value={link}
             onChange={(e) => setLink(e.target.value)}
