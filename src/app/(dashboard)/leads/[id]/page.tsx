@@ -10,6 +10,7 @@ import { LEAD_SOURCE_LABELS } from "@/lib/constants";
 import { ROLES } from "@/lib/constants";
 import Link from "next/link";
 import { Phone, Mail, MapPin, GraduationCap, ArrowLeft } from "lucide-react";
+import { DeleteLeadButton } from "@/components/DeleteLeadButton";
 
 export const metadata = { title: "Lead Details" };
 
@@ -64,7 +65,14 @@ export default async function LeadDetailPage({
         <PageHeader
           title={lead.studentName}
           subtitle={`Lead ${lead.id.slice(-6).toUpperCase()} · ${LEAD_SOURCE_LABELS[lead.leadSource] || lead.leadSource}`}
-          actions={<StatusBadge status={lead.status} />}
+          actions={
+            <div className="flex items-center gap-2">
+              <StatusBadge status={lead.status} />
+              {!lead.convertedStudent && user.role === "SUPER_ADMIN" && (
+                <DeleteLeadButton leadId={lead.id} />
+              )}
+            </div>
+          }
         />
       </div>
 

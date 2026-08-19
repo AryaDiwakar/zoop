@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { getCurrentUser } from "@/lib/auth";
 import { logAudit } from "@/lib/audit";
+import { revalidatePath } from "next/cache";
 
 export async function PATCH(
   request: Request,
@@ -34,5 +35,8 @@ export async function PATCH(
 
   const updated = await prisma.class.update({ where: { id }, data });
   await logAudit({ userId: user.id, action: "CLASS_UPDATE", entity: "Class", entityId: id, details: `Updated class #${updated.number} — ${updated.name}` });
+  
+  revalidatePath("/curriculum");
+  
   return NextResponse.json({ class: updated });
 }

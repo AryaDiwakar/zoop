@@ -4,6 +4,7 @@ import { PageHeader, Card, Badge, EmptyState } from "@/components/ui";
 import { ModuleForm } from "@/components/curriculum/ModuleForm";
 import { ClassForm } from "@/components/curriculum/ClassForm";
 import { ProjectForm } from "@/components/curriculum/ProjectForm";
+import { CourseImportModal } from "@/components/curriculum/CourseImportModal";
 import { ROLES, DIFFICULTY_LABELS } from "@/lib/constants";
 
 export const metadata = { title: "Curriculum" };
@@ -30,6 +31,20 @@ export default async function CurriculumPage({
     orderBy: { createdAt: "asc" },
   });
 
+  const allCourses = await prisma.course.findMany({
+    select: {
+      id: true,
+      name: true,
+      code: true,
+      modules: {
+        select: {
+          _count: { select: { classes: true, projects: true } },
+        },
+      },
+    },
+    orderBy: { name: "asc" },
+  });
+
   return (
     <div className="animate-fade-in space-y-6">
       <PageHeader title="Curriculum Builder" subtitle="Map modules, classes and projects per course." />
@@ -46,10 +61,16 @@ export default async function CurriculumPage({
           title={`${course.name} (${course.code})`}
           subtitle={`${course.modules.length} modules`}
           action={
-            <ModuleForm
-              courseId={course.id}
-              nextNumber={(course.modules.at(-1)?.number || 0) + 1}
-            />
+            <div className="flex gap-2">
+              <CourseImportModal
+                targetCourseId={course.id}
+                courses={allCourses}
+              />
+              <ModuleForm
+                courseId={course.id}
+                nextNumber={(course.modules.at(-1)?.number || 0) + 1}
+              />
+            </div>
           }
         >
           {course.modules.length === 0 && (

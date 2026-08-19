@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { getCurrentUser } from "@/lib/auth";
 import { logAudit } from "@/lib/audit";
+import { revalidatePath } from "next/cache";
 
 export async function POST(request: Request) {
   const user = await getCurrentUser();
@@ -42,6 +43,9 @@ export async function POST(request: Request) {
     entityId: module.id,
     details: `Created module M${module.number} — ${module.name}`,
   });
+
+  revalidatePath("/curriculum");
+  revalidatePath(`/courses/${courseId}`);
 
   return NextResponse.json({ module });
 }

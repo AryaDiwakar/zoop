@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { getCurrentUser } from "@/lib/auth";
 import { logAudit } from "@/lib/audit";
+import { revalidatePath } from "next/cache";
 
 export async function PATCH(
   request: Request,
@@ -50,6 +51,9 @@ export async function PATCH(
     details: `Updated course — ${updated.name}`,
   });
 
+  revalidatePath("/courses");
+  revalidatePath(`/courses/${id}`);
+
   return NextResponse.json({ course: updated });
 }
 
@@ -68,5 +72,8 @@ export async function DELETE(
 
   await prisma.course.delete({ where: { id } });
   await logAudit({ userId: user.id, action: "COURSE_DELETE", entity: "Course", entityId: id });
+  
+  revalidatePath("/courses");
+  
   return NextResponse.json({ ok: true });
 }
